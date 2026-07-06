@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/config"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/handler"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/postgres"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/service"
@@ -23,10 +24,21 @@ func New(port string) *GRPCServer {
 
 	grpcServer := grpc.NewServer()
 
-	repo := postgres.NewTransactionRepository()
+	// Load configuration
+	cfg, err := config.Load()
+	if err != nil {
+		panic(err)
+	}
 
+	// Create PostgreSQL connection
+	db, err := postgres.NewConnection(cfg)
+	if err != nil {
+		panic(err)
+	}
+
+	// Dependency Injection
+	repo := postgres.NewTransactionRepository(db)
 	svc := service.NewTransactionService(repo)
-
 	handler := handler.NewTransactionHandler(svc)
 
 	pb.RegisterTransactionServiceServer(
