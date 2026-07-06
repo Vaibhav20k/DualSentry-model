@@ -6,6 +6,7 @@ import (
 
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/config"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/handler"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/kafka"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/postgres"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/service"
 
@@ -20,37 +21,41 @@ type GRPCServer struct {
 	port   string
 }
 
-func New(port string) *GRPCServer {
+func New(cfg *config.Config) *GRPCServer {
 
 	grpcServer := grpc.NewServer()
 
-	// Load configuration
-	cfg, err := config.Load()
-	if err != nil {
-		panic(err)
-	}
-
-	// Create PostgreSQL connection
+	// PostgreSQL Connection
 	db, err := postgres.NewConnection(cfg)
 	if err != nil {
 		panic(err)
 	}
 
-	// Dependency Injection
+	// Repository
 	repo := postgres.NewTransactionRepository(db)
-	svc := service.NewTransactionService(repo)
-	handler := handler.NewTransactionHandler(svc)
+
+	// Kafka Producer
+	producer, err := kafka.NewProducer(cfg.KafkaBrokers,cfg.KafkaTopic)
+	if err != nil {
+		panic(err)
+	}
+
+	// Service
+	svc := service.NewTransactionService(repo, producer)
+
+	// Handler
+	transactionHandler := handler.NewTransactionHandler(svc)
 
 	pb.RegisterTransactionServiceServer(
 		grpcServer,
-		handler,
+		transactionHandler,
 	)
 
 	reflection.Register(grpcServer)
 
 	return &GRPCServer{
 		server: grpcServer,
-		port:   port,
+		port:   cfg.ServerPort,
 	}
 }
 

@@ -22,7 +22,7 @@ func main() {
 	appLogger.Println("Configuration loaded successfully")
 
 	// Create gRPC server
-	grpcServer := server.New(cfg.ServerPort)
+	grpcServer := server.New(cfg)
 
 	appLogger.Printf("Starting gRPC server on port %s", cfg.ServerPort)
 

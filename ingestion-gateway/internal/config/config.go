@@ -15,6 +15,8 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBName     string
+	KafkaBrokers []string
+	KafkaTopic   string
 }
 
 func Load() (*Config, error) {
@@ -30,6 +32,8 @@ func Load() (*Config, error) {
 		DBUser:     os.Getenv("DB_USER"),
 		DBPassword: os.Getenv("DB_PASSWORD"),
 		DBName:     os.Getenv("DB_NAME"),
+		KafkaBrokers: []string{os.Getenv("KAFKA_BROKERS")},
+		KafkaTopic:   os.Getenv("KAFKA_TOPIC"),
 	}
 
 	if cfg.ServerPort == "" {
