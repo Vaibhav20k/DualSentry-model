@@ -5,6 +5,7 @@ import (
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/kafka"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/repository"
 	pb "github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/proto"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/events"
 
 )
 
@@ -34,14 +35,19 @@ func (s *TransactionService) SubmitTransaction(
 	if err != nil {
 		return nil, err
 	}
-	event := map[string]interface{}{
-		"transaction_id": transactionID,
-		"user_id":        req.UserId,
-		"amount":         req.Amount,
-		"currency":       req.Currency,
-		"payment_method": req.PaymentMethod,
-		"merchant":       req.Merchant,
-		"status":         "RECEIVED",
+	event := events.TransactionEvent{
+	TransactionID:     transactionID,
+	UserID:            req.UserId,
+	Amount:            req.Amount,
+	Currency:          req.Currency,
+	PaymentMethod:     req.PaymentMethod,
+	PaymentIdentifier: req.PaymentIdentifier,
+	Merchant:          req.Merchant,
+	ReceiverAccount:   req.ReceiverAccount,
+	Location:          req.Location,
+	IPAddress:         req.IpAddress,
+	DeviceID:          req.DeviceId,
+	Status:            "RECEIVED",
 	}
 
 	err = s.producer.PublishJSON(
