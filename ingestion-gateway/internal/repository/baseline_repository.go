@@ -23,9 +23,13 @@ type UserBaseline struct {
 }
 
 type BaselineRepository interface {
-
 	GetBaseline(
 		ctx context.Context,
 		userID string,
 	) (*UserBaseline, error)
+
+	UpsertBaseline(
+		ctx context.Context,
+		baseline *UserBaseline,
+	) error
 }

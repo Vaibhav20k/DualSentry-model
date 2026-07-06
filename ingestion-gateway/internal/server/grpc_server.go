@@ -31,17 +31,34 @@ func New(cfg *config.Config) *GRPCServer {
 		panic(err)
 	}
 
-	// Repository
-	repo := postgres.NewTransactionRepository(db)
+	// Primary transaction repository
+	transactionRepo := postgres.NewTransactionRepository(db)
 
-	// Kafka Producer
-	producer, err := kafka.NewProducer(cfg.KafkaBrokers,cfg.KafkaTopic)
+	// Baseline repositories
+	baselineRepo := postgres.NewBaselineRepository(db)
+	historyRepo := postgres.NewHistoryRepository(db)
+
+	// Baseline updater
+	baselineUpdater := service.NewBaselineUpdater(
+		historyRepo,
+		baselineRepo,
+	)
+
+	// Kafka producer
+	producer, err := kafka.NewProducer(
+		cfg.KafkaBrokers,
+		cfg.KafkaTopic,
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	// Service
-	svc := service.NewTransactionService(repo, producer)
+	// Transaction service
+	svc := service.NewTransactionService(
+		transactionRepo,
+		producer,
+		baselineUpdater,
+	)
 
 	// Handler
 	transactionHandler := handler.NewTransactionHandler(svc)

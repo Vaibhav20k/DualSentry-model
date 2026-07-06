@@ -120,3 +120,61 @@ func (r *HistoryRepository) MerchantFrequency(
 	}
 	return float64(merchantCount) / float64(total), nil
 }
+
+func (r *HistoryRepository) GetTransactionStats(
+	ctx context.Context,
+	userID string,
+) (float64, float64, float64, error) {
+
+	var avgAmount sql.NullFloat64
+	var stddev sql.NullFloat64
+	var avgDaily sql.NullFloat64
+
+	// For the current phase we calculate statistics using
+	// all PENDING transactions. Later, when the fraud
+	// decision engine is implemented, this will be changed
+	// to use SUCCESS transactions.
+	err := r.db.QueryRowContext(
+		ctx,
+		`
+		SELECT
+			AVG(amount)::float8,
+			COALESCE(STDDEV_POP(amount)::float8, 0)
+		FROM transactions
+		WHERE user_id = $1
+		  AND status = 'PENDING';
+		`,
+		userID,
+	).Scan(&avgAmount, &stddev)
+
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	if !avgAmount.Valid {
+		return 0, 0, 0, nil
+	}
+
+	err = r.db.QueryRowContext(
+		ctx,
+		`
+		SELECT COALESCE(AVG(daily_count), 0)
+		FROM (
+			SELECT
+				DATE(created_at) AS day,
+				COUNT(*)::float8 AS daily_count
+			FROM transactions
+			WHERE user_id = $1
+			  AND status = 'PENDING'
+			GROUP BY DATE(created_at)
+		) t;
+		`,
+		userID,
+	).Scan(&avgDaily)
+
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return avgAmount.Float64, stddev.Float64, avgDaily.Float64, nil
+}

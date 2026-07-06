@@ -3,6 +3,7 @@ module github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway
 go 1.26
 
 require (
+	github.com/IBM/sarama v1.50.3
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.12.3
 	google.golang.org/grpc v1.82.0
@@ -10,7 +11,6 @@ require (
 )
 
 require (
-	github.com/IBM/sarama v1.50.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect

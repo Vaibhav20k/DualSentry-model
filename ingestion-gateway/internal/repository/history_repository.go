@@ -3,11 +3,16 @@ package repository
 import "context"
 
 type HistoryRepository interface {
-
 	TransactionCountLastHour(
 		ctx context.Context,
 		userID string,
 	) (int, error)
+
+	// GetTransactionStats returns average amount, stddev, and average daily transaction count for successful transactions.
+	GetTransactionStats(
+		ctx context.Context,
+		userID string,
+	) (float64, float64, float64, error)
 
 	MerchantSeen(
 		ctx context.Context,
