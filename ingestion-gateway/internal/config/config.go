@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -17,56 +19,41 @@ type Config struct {
 
 func Load() (*Config, error) {
 
-	// -------------------------
-	// Server Configuration
-	// -------------------------
-	port := os.Getenv("SERVER_PORT")
-
-	if port == "" {
-		port = "50051"
-	}
-
-	// -------------------------
-	// Database Configuration
-	// -------------------------
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	if dbHost == "" {
-		dbHost = "localhost"
-	}
-
-	if dbPort == "" {
-		dbPort = "5432"
-	}
-
-	if dbUser == "" {
-		dbUser = "fintech_user"
-	}
-
-	if dbPassword == "" {
-		dbPassword = "fintech_password"
-	}
-
-	if dbName == "" {
-		dbName = "fintech_db"
-	}
+	// Load .env file (ignore if not found)
+	_ = godotenv.Load()
 
 	cfg := &Config{
-		ServerPort: port,
+		ServerPort: os.Getenv("SERVER_PORT"),
 
-		DBHost:     dbHost,
-		DBPort:     dbPort,
-		DBUser:     dbUser,
-		DBPassword: dbPassword,
-		DBName:     dbName,
+		DBHost:     os.Getenv("DB_HOST"),
+		DBPort:     os.Getenv("DB_PORT"),
+		DBUser:     os.Getenv("DB_USER"),
+		DBPassword: os.Getenv("DB_PASSWORD"),
+		DBName:     os.Getenv("DB_NAME"),
 	}
 
 	if cfg.ServerPort == "" {
-		return nil, fmt.Errorf("server port cannot be empty")
+		cfg.ServerPort = "50051"
+	}
+
+	if cfg.DBHost == "" {
+		return nil, fmt.Errorf("DB_HOST is required")
+	}
+
+	if cfg.DBPort == "" {
+		return nil, fmt.Errorf("DB_PORT is required")
+	}
+
+	if cfg.DBUser == "" {
+		return nil, fmt.Errorf("DB_USER is required")
+	}
+
+	if cfg.DBPassword == "" {
+		return nil, fmt.Errorf("DB_PASSWORD is required")
+	}
+
+	if cfg.DBName == "" {
+		return nil, fmt.Errorf("DB_NAME is required")
 	}
 
 	return cfg, nil

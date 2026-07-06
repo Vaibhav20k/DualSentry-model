@@ -25,7 +25,47 @@ func (r *TransactionRepository) SaveTransaction(
 	transaction *pb.TransactionRequest,
 ) (string, error) {
 
-	// SQL implementation will be added next.
+	query := `
+	INSERT INTO transactions (
+		user_id,
+		amount,
+		currency,
+		payment_method,
+		payment_identifier,
+		merchant,
+		receiver_account,
+		location,
+		ip_address,
+		device_id,
+		status
+	)
+	VALUES (
+		$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+	)
+	RETURNING transaction_id;
+	`
 
-	return "txn-demo-001", nil
+	var transactionID string
+
+	err := r.db.QueryRowContext(
+		ctx,
+		query,
+		transaction.UserId,
+		transaction.Amount,
+		transaction.Currency,
+		transaction.PaymentMethod,
+		transaction.PaymentIdentifier,
+		transaction.Merchant,
+		transaction.ReceiverAccount,
+		transaction.Location,
+		transaction.IpAddress,
+		transaction.DeviceId,
+		"PENDING",
+	).Scan(&transactionID)
+
+	if err != nil {
+		return "", err
+	}
+
+	return transactionID, nil
 }
