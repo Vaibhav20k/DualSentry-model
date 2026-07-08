@@ -117,11 +117,11 @@ func (r *BaselineRepository) UpsertBaseline(
 		$2,
 		$3,
 		$4,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
+		$5,
+		$6,
+		$7,
+		$8,
+		$9,
 		NOW()
 	)
 	ON CONFLICT (user_id)
@@ -129,6 +129,11 @@ func (r *BaselineRepository) UpsertBaseline(
 		average_transaction_amount = EXCLUDED.average_transaction_amount,
 		transaction_amount_stddev = EXCLUDED.transaction_amount_stddev,
 		average_daily_transactions = EXCLUDED.average_daily_transactions,
+		preferred_payment_method = EXCLUDED.preferred_payment_method,
+		preferred_merchant_category = EXCLUDED.preferred_merchant_category,
+		usual_city = EXCLUDED.usual_city,
+		active_hours_start = EXCLUDED.active_hours_start,
+		active_hours_end = EXCLUDED.active_hours_end,
 		last_updated = NOW();
 	`
 
@@ -139,7 +144,16 @@ func (r *BaselineRepository) UpsertBaseline(
 		baseline.AverageAmount,
 		baseline.TransactionStdDev,
 		baseline.AverageDailyTransactions,
+		baseline.PreferredPaymentMethod,
+		baseline.PreferredMerchantCategory,
+		baseline.UsualCity,
+		baseline.ActiveHourStart,
+		baseline.ActiveHourEnd,
 	)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

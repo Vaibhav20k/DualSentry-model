@@ -21,23 +21,27 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// ==========================================
-// Transaction Request
-// ==========================================
 type TransactionRequest struct {
-	state             protoimpl.MessageState `protogen:"open.v1"`
-	UserId            string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Amount            float64                `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
-	Currency          string                 `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
-	PaymentMethod     string                 `protobuf:"bytes,4,opt,name=payment_method,json=paymentMethod,proto3" json:"payment_method,omitempty"`
-	PaymentIdentifier string                 `protobuf:"bytes,5,opt,name=payment_identifier,json=paymentIdentifier,proto3" json:"payment_identifier,omitempty"`
-	Merchant          string                 `protobuf:"bytes,6,opt,name=merchant,proto3" json:"merchant,omitempty"`
-	ReceiverAccount   string                 `protobuf:"bytes,7,opt,name=receiver_account,json=receiverAccount,proto3" json:"receiver_account,omitempty"`
-	Location          string                 `protobuf:"bytes,8,opt,name=location,proto3" json:"location,omitempty"`
-	IpAddress         string                 `protobuf:"bytes,9,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
-	DeviceId          string                 `protobuf:"bytes,10,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// User
+	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	// Time
+	Timestamp string `protobuf:"bytes,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	// Transaction Details
+	Amount            float64 `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
+	Currency          string  `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
+	TransactionType   string  `protobuf:"bytes,5,opt,name=transaction_type,json=transactionType,proto3" json:"transaction_type,omitempty"`
+	PaymentMethod     string  `protobuf:"bytes,6,opt,name=payment_method,json=paymentMethod,proto3" json:"payment_method,omitempty"`
+	PaymentIdentifier string  `protobuf:"bytes,7,opt,name=payment_identifier,json=paymentIdentifier,proto3" json:"payment_identifier,omitempty"`
+	Merchant          string  `protobuf:"bytes,8,opt,name=merchant,proto3" json:"merchant,omitempty"`
+	MerchantCategory  string  `protobuf:"bytes,9,opt,name=merchant_category,json=merchantCategory,proto3" json:"merchant_category,omitempty"`
+	ReceiverAccount   string  `protobuf:"bytes,10,opt,name=receiver_account,json=receiverAccount,proto3" json:"receiver_account,omitempty"`
+	// Device / Network
+	Location      string `protobuf:"bytes,11,opt,name=location,proto3" json:"location,omitempty"`
+	IpAddress     string `protobuf:"bytes,12,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
+	DeviceId      string `protobuf:"bytes,13,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TransactionRequest) Reset() {
@@ -77,6 +81,13 @@ func (x *TransactionRequest) GetUserId() string {
 	return ""
 }
 
+func (x *TransactionRequest) GetTimestamp() string {
+	if x != nil {
+		return x.Timestamp
+	}
+	return ""
+}
+
 func (x *TransactionRequest) GetAmount() float64 {
 	if x != nil {
 		return x.Amount
@@ -87,6 +98,13 @@ func (x *TransactionRequest) GetAmount() float64 {
 func (x *TransactionRequest) GetCurrency() string {
 	if x != nil {
 		return x.Currency
+	}
+	return ""
+}
+
+func (x *TransactionRequest) GetTransactionType() string {
+	if x != nil {
+		return x.TransactionType
 	}
 	return ""
 }
@@ -108,6 +126,13 @@ func (x *TransactionRequest) GetPaymentIdentifier() string {
 func (x *TransactionRequest) GetMerchant() string {
 	if x != nil {
 		return x.Merchant
+	}
+	return ""
+}
+
+func (x *TransactionRequest) GetMerchantCategory() string {
+	if x != nil {
+		return x.MerchantCategory
 	}
 	return ""
 }
@@ -140,9 +165,6 @@ func (x *TransactionRequest) GetDeviceId() string {
 	return ""
 }
 
-// ==========================================
-// Transaction Response
-// ==========================================
 type TransactionResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TransactionId string                 `protobuf:"bytes,1,opt,name=transaction_id,json=transactionId,proto3" json:"transaction_id,omitempty"`
@@ -207,20 +229,23 @@ var File_proto_transaction_proto protoreflect.FileDescriptor
 
 const file_proto_transaction_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/transaction.proto\x12\vtransaction\"\xd6\x02\n" +
+	"\x17proto/transaction.proto\x12\vtransaction\"\xcc\x03\n" +
 	"\x12TransactionRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x16\n" +
-	"\x06amount\x18\x02 \x01(\x01R\x06amount\x12\x1a\n" +
-	"\bcurrency\x18\x03 \x01(\tR\bcurrency\x12%\n" +
-	"\x0epayment_method\x18\x04 \x01(\tR\rpaymentMethod\x12-\n" +
-	"\x12payment_identifier\x18\x05 \x01(\tR\x11paymentIdentifier\x12\x1a\n" +
-	"\bmerchant\x18\x06 \x01(\tR\bmerchant\x12)\n" +
-	"\x10receiver_account\x18\a \x01(\tR\x0freceiverAccount\x12\x1a\n" +
-	"\blocation\x18\b \x01(\tR\blocation\x12\x1d\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1c\n" +
+	"\ttimestamp\x18\x02 \x01(\tR\ttimestamp\x12\x16\n" +
+	"\x06amount\x18\x03 \x01(\x01R\x06amount\x12\x1a\n" +
+	"\bcurrency\x18\x04 \x01(\tR\bcurrency\x12)\n" +
+	"\x10transaction_type\x18\x05 \x01(\tR\x0ftransactionType\x12%\n" +
+	"\x0epayment_method\x18\x06 \x01(\tR\rpaymentMethod\x12-\n" +
+	"\x12payment_identifier\x18\a \x01(\tR\x11paymentIdentifier\x12\x1a\n" +
+	"\bmerchant\x18\b \x01(\tR\bmerchant\x12+\n" +
+	"\x11merchant_category\x18\t \x01(\tR\x10merchantCategory\x12)\n" +
+	"\x10receiver_account\x18\n" +
+	" \x01(\tR\x0freceiverAccount\x12\x1a\n" +
+	"\blocation\x18\v \x01(\tR\blocation\x12\x1d\n" +
 	"\n" +
-	"ip_address\x18\t \x01(\tR\tipAddress\x12\x1b\n" +
-	"\tdevice_id\x18\n" +
-	" \x01(\tR\bdeviceId\"n\n" +
+	"ip_address\x18\f \x01(\tR\tipAddress\x12\x1b\n" +
+	"\tdevice_id\x18\r \x01(\tR\bdeviceId\"n\n" +
 	"\x13TransactionResponse\x12%\n" +
 	"\x0etransaction_id\x18\x01 \x01(\tR\rtransactionId\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\tR\x06status\x12\x18\n" +

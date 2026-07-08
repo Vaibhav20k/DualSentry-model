@@ -178,3 +178,98 @@ func (r *HistoryRepository) GetTransactionStats(
 
 	return avgAmount.Float64, stddev.Float64, avgDaily.Float64, nil
 }
+// PreferredPaymentMethod returns the payment method used most often.
+func (r *HistoryRepository) PreferredPaymentMethod(
+	ctx context.Context,
+	userID string,
+) (string, error) {
+
+	query := `
+	SELECT payment_method
+	FROM transactions
+	WHERE user_id = $1
+	GROUP BY payment_method
+	ORDER BY COUNT(*) DESC
+	LIMIT 1;
+	`
+
+	var paymentMethod sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&paymentMethod)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return paymentMethod.String, nil
+}
+
+// PreferredMerchantCategory returns the most frequently used merchant category.
+// Currently this is a placeholder until merchant categories are introduced.
+func (r *HistoryRepository) PreferredMerchantCategory(
+	ctx context.Context,
+	userID string,
+) (string, error) {
+
+	return "", nil
+}
+
+// UsualCity returns the location used most frequently.
+func (r *HistoryRepository) UsualCity(
+	ctx context.Context,
+	userID string,
+) (string, error) {
+
+	query := `
+	SELECT location
+	FROM transactions
+	WHERE user_id = $1
+	  AND location IS NOT NULL
+	GROUP BY location
+	ORDER BY COUNT(*) DESC
+	LIMIT 1;
+	`
+
+	var city sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(&city)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return city.String, nil
+}
+
+// ActiveHours returns the earliest and latest transaction hour for the user.
+func (r *HistoryRepository) ActiveHours(
+	ctx context.Context,
+	userID string,
+) (int, int, error) {
+
+	query := `
+	SELECT
+		COALESCE(MIN(EXTRACT(HOUR FROM created_at)), 0),
+		COALESCE(MAX(EXTRACT(HOUR FROM created_at)), 23)
+	FROM transactions
+	WHERE user_id = $1;
+	`
+
+	var startHour int
+	var endHour int
+
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&startHour,
+		&endHour,
+	)
+
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return startHour, endHour, nil
+}

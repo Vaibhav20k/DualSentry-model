@@ -25,10 +25,6 @@ const (
 // TransactionServiceClient is the client API for TransactionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// ==========================================
-// Transaction Service
-// ==========================================
 type TransactionServiceClient interface {
 	SubmitTransaction(ctx context.Context, in *TransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
 }
@@ -54,10 +50,6 @@ func (c *transactionServiceClient) SubmitTransaction(ctx context.Context, in *Tr
 // TransactionServiceServer is the server API for TransactionService service.
 // All implementations must embed UnimplementedTransactionServiceServer
 // for forward compatibility.
-//
-// ==========================================
-// Transaction Service
-// ==========================================
 type TransactionServiceServer interface {
 	SubmitTransaction(context.Context, *TransactionRequest) (*TransactionResponse, error)
 	mustEmbedUnimplementedTransactionServiceServer()

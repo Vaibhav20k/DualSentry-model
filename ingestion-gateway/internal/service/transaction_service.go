@@ -60,6 +60,9 @@ func (s *TransactionService) SubmitTransaction(
 		IPAddress:         req.IpAddress,
 		DeviceID:          req.DeviceId,
 		Status:            "RECEIVED",
+		Timestamp:         req.Timestamp,
+		TransactionType:   req.TransactionType,
+		MerchantCategory:  req.MerchantCategory,
 	}
 
 	if err := s.producer.PublishJSON(transactionID, event); err != nil {

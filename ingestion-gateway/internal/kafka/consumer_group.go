@@ -43,9 +43,30 @@ func (h *ConsumerGroupHandler) ConsumeClaim(
 			continue
 		}
 
-		featureVector := features.BuildFeatureVector(event, h.baselineRepo, h.historyRepo)
+		featureVector := features.BuildFeatureVector(
+			event,
+			h.baselineRepo,
+			h.historyRepo,
+		)
 
-		log.Printf("Feature Vector: %+v\n", featureVector)
+		// Create CSV exporter
+		csvExporter := features.NewCSVExporter(
+			"../ml-anomaly-engine/data/feature_vectors/training_dataset.csv",
+		)
+
+		// Create feature pipeline
+		pipeline := features.NewPipeline(csvExporter)
+
+		// Export feature vector
+		if err := pipeline.Process(featureVector); err != nil {
+			log.Printf("failed to export feature vector: %v", err)
+		}
+
+		// Keep console logging
+		featureJSON, _ := json.MarshalIndent(featureVector, "", "  ")
+		log.Println("========== FEATURE VECTOR ==========")
+		log.Println(string(featureJSON))
+		log.Println("====================================")
 
 		session.MarkMessage(message, "")
 	}
