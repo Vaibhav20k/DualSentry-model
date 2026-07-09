@@ -24,3 +24,4 @@ data/processed/
 .venv/
 __pycache__/
 *.pyc
+data/feature_vectors/
