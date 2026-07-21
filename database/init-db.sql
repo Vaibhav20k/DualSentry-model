@@ -162,3 +162,39 @@ CREATE TABLE anomaly_logs (
 
 -- CREATE INDEX IF NOT EXISTS idx_fraud_predictions_created_at
 -- ON fraud_predictions(created_at DESC);
+
+-- ============================================
+-- Manual Review Queue
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS manual_review_queue (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    transaction_id UUID NOT NULL
+        REFERENCES transactions(id)
+        ON DELETE CASCADE,
+
+    fraud_probability DECIMAL(6,5) NOT NULL,
+
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- Fraud Alerts
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS fraud_alerts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    transaction_id UUID NOT NULL
+        REFERENCES transactions(id)
+        ON DELETE CASCADE,
+
+    fraud_probability DECIMAL(6,5) NOT NULL,
+
+    alert_type VARCHAR(30) NOT NULL,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

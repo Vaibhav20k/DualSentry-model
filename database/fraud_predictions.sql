@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS fraud_predictions (
 
     fraud_probability DOUBLE PRECISION NOT NULL,
 
+    confidence DOUBLE PRECISION NOT NULL,
+
     prediction BOOLEAN NOT NULL,
 
     decision VARCHAR(20) NOT NULL,
