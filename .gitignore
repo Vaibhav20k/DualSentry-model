@@ -1,6 +1,9 @@
 # Build artifacts
 ingestion-gateway/server
 ml-anomaly-engine/models/*.joblib
+ml-anomaly-engine/models/*.pkl
+*.pkl
+*.joblib
 ml-anomaly-engine/synthetic_data/*.csv
 
 # Python
