@@ -68,43 +68,28 @@ def root():
 # ==========================================================
 
 @app.post(
-
     "/predict",
-
     response_model=PredictionResponse,
-
 )
-
-def make_prediction(
-
-    request: PredictionRequest,
-
-):
-
+def make_prediction(request: PredictionRequest):
     try:
+        payload = request.model_dump()
 
-        result = predict(
+        print("\n========== Incoming Payload ==========")
+        print(payload)
+        print("=====================================\n")
 
-            request.model_dump()
+        result = predict(payload)
 
-        )
-
-        return PredictionResponse(
-
-            **result
-
-        )
+        return PredictionResponse(**result)
 
     except Exception as e:
+        print("\n========== Prediction Error ==========")
+        import traceback
+        traceback.print_exc()
+        print("======================================\n")
 
         return JSONResponse(
-
             status_code=500,
-
-            content={
-
-                "error": str(e)
-
-            },
-
+            content={"error": str(e)},
         )
