@@ -9,7 +9,6 @@
 
 /* =========================================================================
    Sentinel Intelligence — Design System Tokens (Tailwind v4 @theme)
-   Palette: "Solar-Paper" (Material 3 light) — Terracotta / Sage / Slate
    ========================================================================= */
 @theme {
   /* ---- Brand / surface colors ---- */
@@ -35,7 +34,7 @@
   --color-outline-variant: #dbc1b9;
   --color-surface-tint: #99462a;
 
-  /* ---- Primary (Terracotta) ---- */
+  /* ---- Primary (Terracotta / Orange) ---- */
   --color-primary: #99462a;
   --color-on-primary: #ffffff;
   --color-primary-container: #d97757;
@@ -45,7 +44,7 @@
   --color-on-primary-fixed: #390b00;
   --color-on-primary-fixed-variant: #7a2f15;
 
-  /* ---- Secondary (Sage) ---- */
+  /* ---- Secondary (Sage / Green) ---- */
   --color-secondary: #506358;
   --color-on-secondary: #ffffff;
   --color-secondary-container: #d2e8da;
@@ -55,7 +54,7 @@
   --color-secondary-fixed: #d2e8da;
   --color-secondary-fixed-dim: #b6ccbe;
 
-  /* ---- Tertiary (Slate) ---- */
+  /* ---- Tertiary (Slate / Amber) ---- */
   --color-tertiary: #4b6172;
   --color-on-tertiary: #ffffff;
   --color-tertiary-container: #7e95a7;
@@ -143,12 +142,103 @@
   --shadow-soft: 0 1px 2px rgb(85 67 61 / 0.05), 0 4px 12px rgb(85 67 61 / 0.04);
 }
 
+/* =========================================================================
+   Dark Theme Token Overrides
+   ========================================================================= */
+.dark {
+  --color-background: #0B1220;
+  --color-surface: #0B1220;
+  --color-surface-dim: #080D18;
+  --color-surface-bright: #131C2E;
+  --color-surface-variant: #1B263B;
+  --color-surface-container-lowest: #131C2E;
+  --color-surface-container-low: #172236;
+  --color-surface-container: #1B263B;
+  --color-surface-container-high: #24324A;
+  --color-surface-container-highest: #2B3B55;
+
+  --color-on-surface: #F8FAFC;
+  --color-on-surface-variant: #94A3B8;
+  --color-on-background: #F8FAFC;
+  --color-inverse-surface: #F8FAFC;
+  --color-inverse-on-surface: #0B1220;
+  --color-inverse-primary: #FF8C38;
+
+  --color-outline: #2B3B55;
+  --color-outline-variant: #2B3B55;
+  --color-surface-tint: #F97316;
+
+  /* ---- Primary (Orange Accent) ---- */
+  --color-primary: #F97316;
+  --color-on-primary: #FFFFFF;
+  --color-primary-container: #EA580C;
+  --color-on-primary-container: #FFFFFF;
+  --color-primary-fixed: #FFD8C2;
+  --color-primary-fixed-dim: #FF8C38;
+  --color-on-primary-fixed: #431400;
+  --color-on-primary-fixed-variant: #9A3412;
+
+  /* ---- Secondary (Green / Success) ---- */
+  --color-secondary: #22C55E;
+  --color-on-secondary: #FFFFFF;
+  --color-secondary-container: #14532D;
+  --color-on-secondary-container: #DCFCE7;
+  --color-on-secondary-fixed: #052E16;
+  --color-on-secondary-fixed-variant: #166534;
+  --color-secondary-fixed: #14532D;
+  --color-secondary-fixed-dim: #22C55E;
+
+  /* ---- Tertiary (Amber / Warning) ---- */
+  --color-tertiary: #FACC15;
+  --color-on-tertiary: #000000;
+  --color-tertiary-container: #713F12;
+  --color-on-tertiary-container: #FEF08A;
+  --color-tertiary-fixed: #FEF08A;
+  --color-tertiary-fixed-dim: #FDE047;
+  --color-on-tertiary-fixed: #422006;
+  --color-on-tertiary-fixed-variant: #854D0E;
+
+  /* ---- Error (Red / Danger) ---- */
+  --color-error: #EF4444;
+  --color-on-error: #FFFFFF;
+  --color-error-container: #7F1D1D;
+  --color-on-error-container: #FEE2E2;
+
+  /* ---- shadcn/ui compatibility aliases ---- */
+  --color-foreground: #F8FAFC;
+  --color-card: #131C2E;
+  --color-card-foreground: #F8FAFC;
+  --color-popover: #131C2E;
+  --color-popover-foreground: #F8FAFC;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary-foreground: #FFFFFF;
+  --color-muted: #1B263B;
+  --color-muted-foreground: #94A3B8;
+  --color-accent: #1B263B;
+  --color-accent-foreground: #F8FAFC;
+  --color-destructive: #EF4444;
+  --color-border: #2B3B55;
+  --color-input: #2B3B55;
+  --color-ring: #F97316;
+
+  /* ---- Charts ---- */
+  --color-chart-1: #F97316;
+  --color-chart-2: #22C55E;
+  --color-chart-3: #FACC15;
+  --color-chart-4: #EA580C;
+  --color-chart-5: #EF4444;
+
+  --shadow-soft: 0 1px 3px rgb(0 0 0 / 0.5), 0 4px 12px rgb(0 0 0 / 0.4);
+}
+
 @layer base {
   * {
     @apply border-outline-variant/30;
+    transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out, color 250ms ease-in-out;
   }
   html {
     @apply font-body antialiased;
+    transition: background-color 250ms ease-in-out, color 250ms ease-in-out;
   }
   body {
     @apply bg-background text-foreground font-body;
@@ -156,7 +246,7 @@
 }
 
 @layer utilities {
-  /* Level-1 surface: pure white with a hairline border + soft ambient shadow */
+  /* Level-1 surface: card container with border + shadow */
   .tonal-layer-1 {
     @apply bg-surface-container-lowest border border-outline-variant/20 shadow-soft rounded-xl;
   }
@@ -186,5 +276,10 @@
   .dotted-grid {
     background-image: radial-gradient(circle, var(--color-outline) 1px, transparent 1px);
     background-size: 24px 24px;
+  }
+
+  /* Zebra table styling */
+  tr:nth-child(even) {
+    background-color: var(--color-surface-container-low);
   }
 }
