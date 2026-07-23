@@ -431,8 +431,8 @@ def predict_transaction(
         result = predict(payload)
 
         AuditLogger.log(
-            username=current_user["sub"],
-            role=current_user["role"],
+            username="gateway-service",
+            role="SERVICE",
             action="PREDICTION",
             status="SUCCESS",
         )
@@ -444,8 +444,8 @@ def predict_transaction(
     except FeatureValidationError as e:
 
         AuditLogger.log(
-            username=current_user["sub"],
-            role=current_user["role"],
+            username="gateway-service",
+            role="SERVICE",
             action="PREDICTION",
             status="FAILED",
             details=str(e),
@@ -459,8 +459,8 @@ def predict_transaction(
     except Exception as e:
 
         AuditLogger.log(
-            username=current_user["sub"],
-            role=current_user["role"],
+            username="gateway-service",
+            role="SERVICE",
             action="PREDICTION",
             status="FAILED",
             details=str(e),
@@ -469,12 +469,9 @@ def predict_transaction(
         import logging
         logging.getLogger(__name__).exception("Prediction error")
 
-        return JSONResponse(
+        raise HTTPException(
             status_code=500,
-            content={
-                "success": False,
-                "error": str(e),
-            },
+            detail=str(e),
         )
 
 
