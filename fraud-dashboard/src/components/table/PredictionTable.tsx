@@ -1,3 +1,4 @@
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, ArrowRight } from "lucide-react";
 
 import Panel from "@/components/common/Panel";
@@ -38,14 +39,14 @@ function decisionTone(d: Decision): "allow" | "review" | "block" {
   return "allow";
 }
 
-
-
 interface Props {
   /** Feed from the API / WebSocket. Falls back to design mock data. */
   data?: Prediction[];
 }
 
 export default function PredictionTable({ data = [] }: Props) {
+  const navigate = useNavigate();
+
   return (
     <Panel
       title="Recent Model Predictions"
@@ -54,10 +55,13 @@ export default function PredictionTable({ data = [] }: Props) {
       className="lg:col-span-2"
       bodyClassName="overflow-x-auto"
       action={
-        <button className="text-primary font-label-md hover:underline flex items-center gap-xs">
+        <Link
+          to="/transactions"
+          className="text-primary font-label-md hover:underline flex items-center gap-xs cursor-pointer"
+        >
           View Full Queue
           <ArrowRight size={16} />
-        </button>
+        </Link>
       }
     >
       <table className="w-full text-left">
@@ -131,7 +135,8 @@ export default function PredictionTable({ data = [] }: Props) {
                   <button
                     type="button"
                     aria-label={`View ${row.id}`}
-                    className="p-xs text-on-surface-variant hover:text-primary transition-colors"
+                    onClick={() => navigate(`/investigation/new?id=${row.id}`)}
+                    className="p-xs text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
                   >
                     <Eye size={18} />
                   </button>
