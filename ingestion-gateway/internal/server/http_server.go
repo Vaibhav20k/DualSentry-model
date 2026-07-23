@@ -63,10 +63,14 @@ func NewHTTPServer(
 	// ML Client
 	mlClient := ml.NewClient("")
 
+	// Prediction repository
+	predictionRepo := postgres.NewFraudPredictionRepository(db)
+
 	// Transaction service
 	transactionService := service.NewTransactionService(
 		transactionRepo,
 		anomalyRepo,
+		predictionRepo,
 		baselineRepo,
 		historyRepo,
 		producer,
@@ -78,9 +82,6 @@ func NewHTTPServer(
 	transactionHandler := apihandler.NewTransactionHandler(
 		transactionService,
 	)
-
-	// Prediction repository
-	predictionRepo := postgres.NewFraudPredictionRepository(db)
 
 	// Prediction handler
 	predictionHandler := apihandler.NewPredictionHandler(

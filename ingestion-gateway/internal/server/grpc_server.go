@@ -60,9 +60,13 @@ func New(cfg *config.Config) *GRPCServer {
 		panic(err)
 	}
 
+	// Prediction repository
+	predictionRepo := postgres.NewFraudPredictionRepository(db)
+
 	svc := service.NewTransactionService(
 		transactionRepo,
 		anomalyRepo,
+		predictionRepo,
 		baselineRepo,
 		historyRepo,
 		producer,
