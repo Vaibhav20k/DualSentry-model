@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   LayoutDashboard,
   ShieldAlert,
@@ -13,11 +14,11 @@ import {
 import SidebarItem from "./SidebarItem";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", active: true },
-  { icon: ShieldAlert, label: "Risk Queue" },
-  { icon: ReceiptText, label: "Transactions" },
-  { icon: ListChecks, label: "Watchlists" },
-  { icon: BarChart3, label: "Reports" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+  { icon: ShieldAlert, label: "Risk Queue", href: "/risk-queue" },
+  { icon: ReceiptText, label: "Transactions", href: "/transactions" },
+  { icon: ListChecks, label: "Watchlists", href: "/watchlists" },
+  { icon: BarChart3, label: "Reports", href: "/reports" },
 ];
 
 interface SidebarProps {
@@ -29,7 +30,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
   return (
     <nav className="flex flex-col h-full w-64 py-lg px-md gap-lg bg-surface-container-low border-r border-outline-variant/20">
       {/* Brand */}
-      <div className="flex items-center gap-sm px-md mb-md">
+      <Link to="/" onClick={onNavigate} className="flex items-center gap-sm px-md mb-md">
         <div className="w-8 h-8 bg-primary rounded flex items-center justify-center shrink-0">
           <ShieldCheck className="text-white" size={20} />
         </div>
@@ -41,16 +42,17 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             Fraud Analysis v2.4
           </p>
         </div>
-      </div>
+      </Link>
 
       {/* Primary action */}
-      <button
-        type="button"
-        className="mx-md bg-primary text-on-primary font-label-md py-sm rounded-lg flex items-center justify-center gap-sm hover:opacity-90 transition-all shadow-soft"
+      <Link
+        to="/investigation/new"
+        onClick={onNavigate}
+        className="mx-md bg-primary text-on-primary font-label-md py-sm rounded-lg flex items-center justify-center gap-sm hover:opacity-90 transition-all shadow-soft cursor-pointer"
       >
         <Plus size={18} />
         New Investigation
-      </button>
+      </Link>
 
       {/* Primary navigation */}
       <div className="flex flex-col gap-xs mt-md">
@@ -59,7 +61,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
             key={item.label}
             icon={item.icon}
             label={item.label}
-            active={item.active}
+            href={item.href}
             onClick={onNavigate}
           />
         ))}
