@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/decision"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/events"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/features"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/kafka"
@@ -17,10 +18,11 @@ import (
 )
 
 type TransactionService struct {
-	repository   repository.TransactionRepository
-	anomalyRepo  repository.AnomalyRepository
-	baselineRepo repository.BaselineRepository
-	historyRepo  repository.HistoryRepository
+	repository       repository.TransactionRepository
+	anomalyRepo      repository.AnomalyRepository
+	fraudPredRepo    repository.FraudPredictionRepository
+	baselineRepo     repository.BaselineRepository
+	historyRepo      repository.HistoryRepository
 
 	producer *kafka.Producer
 	updater  *BaselineUpdater
@@ -30,6 +32,7 @@ type TransactionService struct {
 func NewTransactionService(
 	repo repository.TransactionRepository,
 	anomalyRepo repository.AnomalyRepository,
+	fraudPredRepo repository.FraudPredictionRepository,
 	baselineRepo repository.BaselineRepository,
 	historyRepo repository.HistoryRepository,
 	producer *kafka.Producer,
@@ -38,13 +41,14 @@ func NewTransactionService(
 ) *TransactionService {
 
 	return &TransactionService{
-		repository:   repo,
-		anomalyRepo:  anomalyRepo,
-		baselineRepo: baselineRepo,
-		historyRepo:  historyRepo,
-		producer:     producer,
-		updater:      updater,
-		mlClient:     mlClient,
+		repository:    repo,
+		anomalyRepo:   anomalyRepo,
+		fraudPredRepo: fraudPredRepo,
+		baselineRepo:  baselineRepo,
+		historyRepo:   historyRepo,
+		producer:      producer,
+		updater:       updater,
+		mlClient:      mlClient,
 	}
 }
 
@@ -152,15 +156,7 @@ func (s *TransactionService) SubmitTransaction(
 		return nil, err
 	}
 
-	prediction := result.(*ml.PredictionResponse)	
-
-	metrics.MLPredictionDuration.Observe(
-		time.Since(predictionStart).Seconds(),
-	)
-
-	if err != nil {
-		return nil, err
-	}
+	prediction := result.(*ml.PredictionResponse)
 
 	fmt.Printf(
 		"\n==============================\n"+
@@ -176,16 +172,17 @@ func (s *TransactionService) SubmitTransaction(
 	// Step 6: Persist Prediction
 	// ---------------------------------------------------------
 
-	anomalyType := "NORMAL"
-	if prediction.Prediction {
-		anomalyType = "FRAUD"
-	}
+	decEngine := decision.NewEngine()
+	dec := decEngine.Decide(prediction.FraudProbability)
+	decisionStr := string(dec)
+
+	isFraud := prediction.Prediction || dec == decision.Block
 
 	err = s.anomalyRepo.SavePrediction(
 		ctx,
 		transactionID,
 		prediction.FraudProbability,
-		anomalyType,
+		decisionStr,
 		"xgboost",
 		"hi_li_small_v1",
 		"",
@@ -194,8 +191,26 @@ func (s *TransactionService) SubmitTransaction(
 		return nil, err
 	}
 
+	err = s.fraudPredRepo.SavePrediction(
+		ctx,
+		repository.FraudPrediction{
+			TransactionID:    transactionID,
+			UserID:           req.UserId,
+			FraudProbability: prediction.FraudProbability,
+			Confidence:       prediction.Confidence,
+			Prediction:       isFraud,
+			Decision:         decisionStr,
+			Threshold:        prediction.Threshold,
+			ModelVersion:     prediction.ModelVersion,
+			RiskFlags:        vector.RiskFlags,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	event.FraudProbability = prediction.FraudProbability
-	event.IsFraud = prediction.Prediction
+	event.IsFraud = isFraud
 	event.ModelName = "xgboost"
 	event.ModelVersion = "hi_li_small_v1"
 		// ---------------------------------------------------------
