@@ -11,10 +11,21 @@ export interface Prediction {
   riskFlags: string[];
 }
 
-export async function getPredictions(): Promise<Prediction[]> {
-  const response = await api.get("/predictions");
+interface RawPrediction {
+  transactionID: string;
+  userID: string;
+  fraudProbability: number;
+  prediction: boolean;
+  decision: string;
+  threshold: number;
+  modelVersion: string;
+  riskFlags?: string[];
+}
 
-  return response.data.map((item: any) => ({
+export async function getPredictions(): Promise<Prediction[]> {
+  const response = await api.get<RawPrediction[]>("/predictions");
+
+  return response.data.map((item) => ({
     transactionID: item.transactionID,
     userID: item.userID,
     fraudProbability: item.fraudProbability,

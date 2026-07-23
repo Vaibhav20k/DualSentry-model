@@ -6,5 +6,6 @@ export function usePredictions() {
     queryKey: ["predictions"],
     queryFn: getPredictions,
     refetchInterval: 5000,
+    staleTime: 5000
   });
 }

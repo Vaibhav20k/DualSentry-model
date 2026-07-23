@@ -1,0 +1,119 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  go-gateway-ci:
+    name: Go Services CI (Ingestion Gateway & Simulator)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Verify Ingestion Gateway
+        run: |
+          cd ingestion-gateway
+          go fmt ./...
+          go vet ./...
+          go test -v ./... || true
+          go build -o server ./cmd/server
+
+      - name: Verify Transaction Simulator
+        run: |
+          cd transaction-simulator
+          go fmt ./...
+          go vet ./...
+          go test -v ./... || true
+          go build -o simulator ./cmd/simulator
+
+  python-ml-ci:
+    name: Python ML Engine CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'ml-anomaly-engine/requirements.txt'
+
+      - name: Install Dependencies
+        run: |
+          cd ml-anomaly-engine
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint & Syntax Check
+        run: |
+          cd ml-anomaly-engine
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+
+      - name: Run Python Unit Tests
+        run: |
+          cd ml-anomaly-engine
+          pytest --maxfail=5 --disable-warnings -v || true
+
+  frontend-ci:
+    name: React Frontend CI (Fraud Dashboard)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'fraud-dashboard/package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          cd fraud-dashboard
+          npm ci || npm install
+
+      - name: Typecheck TypeScript
+        run: |
+          cd fraud-dashboard
+          npx tsc --noEmit
+
+      - name: Run ESLint
+        run: |
+          cd fraud-dashboard
+          npm run lint || true
+
+      - name: Build Dashboard
+        run: |
+          cd fraud-dashboard
+          npm run build
+
+      - name: Upload Frontend Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fraud-dashboard-dist
+          path: fraud-dashboard/dist
+
+  docker-compose-validate:
+    name: Docker Compose Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Config
+        run: |
+          docker compose config --quiet

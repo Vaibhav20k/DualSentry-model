@@ -1,0 +1,40 @@
+# Git
+.git
+.github
+
+# Node
+**/node_modules
+**/dist
+**/.next
+**/build
+
+# Python
+**/.venv
+**/venv
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+**/*.pyo
+
+# Go
+**/bin
+**/coverage.out
+
+# IDE
+.vscode
+.idea
+
+# Logs
+**/*.log
+logs
+
+# Environment
+.env
+.env.*
+
+# Documentation
+docs
+
+# OS
+.DS_Store
+Thumbs.db

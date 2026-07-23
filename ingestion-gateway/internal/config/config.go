@@ -16,8 +16,14 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBName     string
+
+	RedisHost string
+	RedisPort string
+
 	KafkaBrokers []string
 	KafkaTopic   string
+
+	MLServiceURL string
 }
 
 func Load() (*Config, error) {
@@ -26,25 +32,23 @@ func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		ServerPort: os.Getenv("SERVER_PORT"),
-		HTTPPort: os.Getenv("HTTP_PORT"),
+		ServerPort: getEnvWithDefault("SERVER_PORT", "50051"),
+		HTTPPort:   getEnvWithDefault("HTTP_PORT", "8080"),
 
 		DBHost:     os.Getenv("DB_HOST"),
 		DBPort:     os.Getenv("DB_PORT"),
 		DBUser:     os.Getenv("DB_USER"),
 		DBPassword: os.Getenv("DB_PASSWORD"),
 		DBName:     os.Getenv("DB_NAME"),
-		KafkaBrokers: []string{os.Getenv("KAFKA_BROKERS")},
-		KafkaTopic:   os.Getenv("KAFKA_TOPIC"),
-	}
 
-	if cfg.ServerPort == "" {
-		cfg.ServerPort = "50051"
+		RedisHost: getEnvWithDefault("REDIS_HOST", "localhost"),
+		RedisPort: getEnvWithDefault("REDIS_PORT", "6379"),
+
+		KafkaBrokers: []string{getEnvWithDefault("KAFKA_BROKERS", "localhost:9092")},
+		KafkaTopic:   getEnvWithDefault("KAFKA_TOPIC", "transactions.raw"),
+
+		MLServiceURL: getEnvWithDefault("ML_SERVICE_URL", "http://localhost:8000"),
 	}
-	
-	if cfg.HTTPPort == "" {
-	cfg.HTTPPort = "8080"
-}
 
 	if cfg.DBHost == "" {
 		return nil, fmt.Errorf("DB_HOST is required")
@@ -68,3 +72,10 @@ func Load() (*Config, error) {
 
 	return cfg, nil
 }
+
+func getEnvWithDefault(key, defaultValue string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return defaultValue
+}

@@ -1,0 +1,36 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Git
+.git
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.*
+
+# Training datasets
+data/
+
+# Jupyter
+notebooks/
+
+# Training outputs
+checkpoints/
+runs/
+
+# Misc
+.DS_Store

@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from monitoring.drift_runner import run_drift_detection
 
 from retraining.dataset_builder import (
@@ -27,7 +31,7 @@ def should_retrain():
 
     except RuntimeError as error:
 
-        print(error)
+        logger.warning("Drift detection failed: %s", error)
 
         return False
 

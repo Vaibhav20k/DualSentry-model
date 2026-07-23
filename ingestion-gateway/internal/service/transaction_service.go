@@ -231,7 +231,7 @@ func (s *TransactionService) SubmitTransaction(
 		if err := idempotency.Save(
 			ctx,
 			idempotencyKey,
-			*response,
+			response,
 		); err != nil {
 			log.Printf(
 				"Failed to cache idempotent response: %v",

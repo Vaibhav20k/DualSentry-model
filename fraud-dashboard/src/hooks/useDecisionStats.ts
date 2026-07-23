@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { usePredictions } from "./usePredictions";
+import type { Prediction } from "../services/predictions";
 
 export function useDecisionStats() {
   const { data = [], ...rest } = usePredictions();
@@ -9,7 +10,7 @@ export function useDecisionStats() {
     let review = 0;
     let block = 0;
 
-    data.forEach((p: any) => {
+    data.forEach((p: Prediction) => {
       switch (p.decision) {
         case "ALLOW":
           allow++;

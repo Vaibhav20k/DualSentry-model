@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import pandas as pd
@@ -117,4 +118,5 @@ if __name__ == "__main__":
         result["probabilities"],
     )
 
-    print(metrics)
+    logger = logging.getLogger(__name__)
+    logger.info("Retraining metrics: %s", metrics)

@@ -129,11 +129,11 @@ services:
 
   # Ingestion Gateway
   ingestion-gateway:
+    container_name: fintech-ingestion-gateway
     build:
       context: ./ingestion-gateway
       dockerfile: Dockerfile
-    
-
+    restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
@@ -141,27 +141,86 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-
     environment:
       SERVER_PORT: 50051
       HTTP_PORT: 8080
-
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: fintech_user
       DB_PASSWORD: dev_password_change_in_prod
       DB_NAME: fintech_db
-
       REDIS_HOST: redis
       REDIS_PORT: 6379
-
       KAFKA_BROKERS: kafka:29092
       KAFKA_TOPIC: transactions.raw
+      CORS_ALLOWED_ORIGIN: http://localhost:3001
+      ML_SERVICE_URL: http://ml-anomaly-engine:8000
+    ports:
+    - "8080:8080"
+    - "50051:50051"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - fintech-network
 
-    expose:
-    - "8080"
-    - "50051"
+  # Python ML Anomaly Engine
+  ml-anomaly-engine:
+    container_name: fintech-ml-engine
+    build:
+      context: ./ml-anomaly-engine
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      ENVIRONMENT: production
+      POSTGRES_USER: fintech_user
+      POSTGRES_PASSWORD: dev_password_change_in_prod
+      POSTGRES_DB: fintech_db
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - fintech-network
 
+  # Fraud Dashboard Frontend
+  fraud-dashboard:
+    container_name: fintech-dashboard
+    build:
+      context: ./fraud-dashboard
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    environment:
+      VITE_API_BASE_URL: http://localhost:8080
+    networks:
+      - fintech-network
+
+  # Transaction Simulator
+  transaction-simulator:
+    container_name: fintech-simulator
+    build:
+      context: ./transaction-simulator
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      GATEWAY_URL: http://ingestion-gateway:8080
+      TPS: 10
+    depends_on:
+      ingestion-gateway:
+        condition: service_started
     networks:
       - fintech-network
 
@@ -169,16 +228,15 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: fintech-nginx
-
+    restart: unless-stopped
     depends_on:
       - ingestion-gateway
-
+      - ml-anomaly-engine
+      - fraud-dashboard
     ports:
       - "80:80"
-
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-
     networks:
       - fintech-network
 

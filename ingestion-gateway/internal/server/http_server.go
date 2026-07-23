@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 	"context"
 
@@ -89,6 +90,11 @@ func NewHTTPServer(
 	// Dashboard handler
 	dashboardHandler := apihandler.NewDashboardHandler(
 		predictionRepo,
+	)
+
+	mux.HandleFunc(
+		"/health",
+		apihandler.LiveHandler,
 	)
 
 	mux.HandleFunc(
@@ -195,14 +201,16 @@ func metricsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// --------------------
-// CORS Middleware
-// --------------------
-
+// corsMiddleware handles CORS headers.
+// The allowed origin is configurable via the CORS_ALLOWED_ORIGIN
+// environment variable, defaulting to the local Vite dev server.
 func corsMiddleware(next http.Handler) http.Handler {
+	allowedOrigin := os.Getenv("CORS_ALLOWED_ORIGIN")
+	if allowedOrigin == "" {
+		allowedOrigin = "http://localhost:5173"
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 

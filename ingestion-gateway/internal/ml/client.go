@@ -7,12 +7,13 @@
 		"fmt"
 		"net/http"
 		"time"
+		"os"
 
 		"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/features"
 	)
 
 	const (
-		DefaultMLServiceURL = "http://localhost:8000"
+    	DefaultMLServiceURL = "http://ml-anomaly-engine:8000"
 	)
 
 	type Client struct {
@@ -20,12 +21,15 @@
 		httpClient *http.Client
 	}
 
-	func NewClient(
-		baseURL string,
-	) *Client {
-
+	func NewClient(baseURL string) *Client {
+		if baseURL == "" {
+			baseURL = os.Getenv("ML_SERVICE_URL")
+		}
 		if baseURL == "" {
 			baseURL = DefaultMLServiceURL
+		}
+		if baseURL == "" {
+			baseURL = "http://ml-anomaly-engine:8000"
 		}
 
 		return &Client{

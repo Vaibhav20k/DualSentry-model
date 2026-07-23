@@ -14,7 +14,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 	generator.InitUsers(1000)
 
-	api := client.New("http://localhost:8080")
+	api := client.New("http://ingestion-gateway:8080")
 
 	log.Println("======================================")
 	log.Println(" FinTech Transaction Simulator Started")

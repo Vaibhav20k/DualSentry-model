@@ -1,14 +1,21 @@
 global:
-  scrape_interval: 5s
-  evaluation_interval: 5s
+  scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: "ingestion-server"
+  - job_name: "ingestion-gateway"
     static_configs:
       - targets:
-          - host.docker.internal:8080
+          - ingestion-gateway:8080
+    metrics_path: /metrics
 
-  - job_name: "kafka-consumer"
+  - job_name: "ml-anomaly-engine"
     static_configs:
       - targets:
-          - host.docker.internal:9091
+          - ml-anomaly-engine:8000
+    metrics_path: /metrics
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets:
+          - localhost:9090

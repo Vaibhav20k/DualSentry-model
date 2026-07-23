@@ -1,16 +1,31 @@
-# Build artifacts
+# Build & Dependency Artifacts
+node_modules/
+dist/
+build/
 ingestion-gateway/server
+transaction-simulator/simulator
 ml-anomaly-engine/models/*.joblib
 ml-anomaly-engine/models/*.pkl
 *.pkl
 *.joblib
 ml-anomaly-engine/synthetic_data/*.csv
+ml-anomaly-engine/.venv/
+.venv/
 
 # Python
 venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Dev Test Files & Logs
+*.jsonl
+request.json
+transaction.json
+test.json
+build.log
+*.log
+logs/
 
 # IDE
 .vscode/
@@ -23,23 +38,19 @@ __pycache__/
 postgres_data/
 redis_data/
 
-# Logs
-*.log
-logs/
-
 # Environment
 .env
 .env.local
+.env.production
+.env.development
 
 # Go
 bin/
 *.test
 *.out
 
-# macOS
+# macOS / Windows
 .DS_Store
-
-# Windows
 Thumbs.db
 
 # Coverage reports
