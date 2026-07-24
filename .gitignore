@@ -59,3 +59,12 @@ coverage.html
 
 # Docker
 *.pid
+
+# Benchmark raw generated outputs (large JSON dumps)
+benchmark/*_health_results.json
+benchmark/*.report.html
+benchmark/*.report.json
+
+# ML processed data (regeneratable from raw data)
+ml-anomaly-engine/data/processed/
+ml-anomaly-engine/data/feature_vectors/
