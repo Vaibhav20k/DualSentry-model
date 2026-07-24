@@ -11,7 +11,7 @@ import {
 
 import NavbarStatus from "./NavbarStatus";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/theme-context";
 
 interface NavbarProps {
   /** Opens the mobile navigation drawer (hidden on desktop). */

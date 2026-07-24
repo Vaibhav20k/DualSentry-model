@@ -1,4 +1,4 @@
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/theme-context";
 
 export const sentinelLight = {
   primary: "#99462a",
