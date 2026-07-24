@@ -1,0 +1,135 @@
+{
+  "phase": 4,
+  "title": "Database Benchmark",
+  "tool": "PostgreSQL EXPLAIN ANALYZE BUFFERS",
+  "database": {
+    "name": "fintech_db",
+    "size": "15 MB",
+    "postgres_version": "16-alpine"
+  },
+  "table_stats": [
+    {"table": "transactions", "rows": 12326, "size": "2400 kB"},
+    {"table": "user_baselines", "rows": 10276, "size": "992 kB"},
+    {"table": "anomaly_logs", "rows": 9718, "size": "1192 kB"},
+    {"table": "fraud_predictions", "rows": 9271, "size": "1264 kB"},
+    {"table": "manual_review_queue", "rows": 0, "size": "0 bytes"},
+    {"table": "fraud_alerts", "rows": 0, "size": "0 bytes"}
+  ],
+  "queries": [
+    {
+      "name": "GetAllPredictions",
+      "query": "SELECT ... FROM fraud_predictions ORDER BY created_at DESC",
+      "plan": "Seq Scan + Sort (quicksort, 1394kB)",
+      "rows_scanned": 9223,
+      "planning_time_ms": 1.868,
+      "execution_time_ms": 7.412,
+      "buffers": "shared hit=161",
+      "index_used": "None (sequential scan)"
+    },
+    {
+      "name": "GetDashboardSummary",
+      "query": "SELECT COUNT(*) ... FROM fraud_predictions (with FILTER aggregations)",
+      "plan": "Seq Scan + Aggregate",
+      "rows_scanned": 9223,
+      "planning_time_ms": 0.584,
+      "execution_time_ms": 2.418,
+      "buffers": "shared hit=158",
+      "index_used": "None (sequential scan)"
+    },
+    {
+      "name": "GetFraudTrend",
+      "query": "SELECT DATE_TRUNC('hour', created_at), COUNT(*) FROM fraud_predictions GROUP BY ...",
+      "plan": "Seq Scan + Sort + GroupAggregate (745kB)",
+      "rows_scanned": 9223,
+      "planning_time_ms": 0.679,
+      "execution_time_ms": 4.246,
+      "buffers": "shared hit=161",
+      "index_used": "None (sequential scan)"
+    },
+    {
+      "name": "GetPredictionByTransactionID",
+      "query": "SELECT ... FROM fraud_predictions WHERE transaction_id = $1",
+      "plan": "Seq Scan + Filter (9222 rows removed)",
+      "rows_scanned": 9223,
+      "planning_time_ms": 1.315,
+      "execution_time_ms": 0.953,
+      "buffers": "shared hit=158",
+      "index_used": "None (sequential scan)"
+    },
+    {
+      "name": "RecentTransactions",
+      "query": "SELECT * FROM transactions ORDER BY created_at DESC LIMIT 20",
+      "plan": "Seq Scan + Top-N Heapsort (35kB)",
+      "rows_scanned": 12304,
+      "planning_time_ms": 1.874,
+      "execution_time_ms": 3.212,
+      "buffers": "shared hit=302",
+      "index_used": "None (sequential scan)"
+    },
+    {
+      "name": "PendingTransactions (Risk Queue)",
+      "query": "SELECT * FROM transactions WHERE status = 'PENDING' ORDER BY created_at DESC LIMIT 20",
+      "plan": "Seq Scan + Filter + Top-N Heapsort (35kB)",
+      "rows_scanned": 12305,
+      "planning_time_ms": 1.268,
+      "execution_time_ms": 4.093,
+      "buffers": "shared hit=302",
+      "index_used": "None (sequential scan)"
+    },
+    {
+      "name": "GetRiskQueue",
+      "query": "SELECT * FROM manual_review_queue",
+      "plan": "Seq Scan",
+      "rows_scanned": 0,
+      "planning_time_ms": 5.809,
+      "execution_time_ms": 0.046,
+      "buffers": "shared hit=69",
+      "index_used": "None (sequential scan)"
+    }
+  ],
+  "indexes_current": [
+    {"table": "fraud_predictions", "index": "fraud_predictions_pkey", "columns": ["id"]},
+    {"table": "transactions", "index": "transactions_pkey", "columns": ["transaction_id"]},
+    {"table": "user_baselines", "index": "user_baselines_pkey", "columns": ["user_id"]},
+    {"table": "manual_review_queue", "index": "manual_review_queue_pkey", "columns": ["id"]},
+    {"table": "anomaly_logs", "index": "anomaly_logs_pkey", "columns": ["anomaly_id"]},
+    {"table": "fraud_alerts", "index": "fraud_alerts_pkey", "columns": ["id"]}
+  ],
+  "missing_index_recommendations": [
+    {
+      "priority": "HIGH",
+      "table": "fraud_predictions",
+      "columns": ["created_at DESC"],
+      "rationale": "GetAllPredictions ORDER BY and GetFraudTrend GROUP BY both sort on created_at via quicksort (1394kB and 745kB). An index would enable index-only scan eliminating the sort step entirely. Critical as rows grow beyond 100K.",
+      "sql": "CREATE INDEX idx_fraud_predictions_created_at ON fraud_predictions (created_at DESC);"
+    },
+    {
+      "priority": "HIGH",
+      "table": "transactions",
+      "columns": ["created_at DESC"],
+      "rationale": "RecentTransactions query sorts via Top-N Heapsort. An index would provide sorted scan without sort step.",
+      "sql": "CREATE INDEX idx_transactions_created_at ON transactions (created_at DESC);"
+    },
+    {
+      "priority": "MEDIUM",
+      "table": "fraud_predictions",
+      "columns": ["transaction_id"],
+      "rationale": "GetPredictionByTransactionID filters 9222 out of 9223 rows via Seq Scan. A btree index would reduce to a single index lookup (< 0.1ms). Currently acceptable at 9K rows, critical at scale.",
+      "sql": "CREATE INDEX idx_fraud_predictions_transaction_id ON fraud_predictions (transaction_id);"
+    },
+    {
+      "priority": "MEDIUM",
+      "table": "transactions",
+      "columns": ["status", "created_at DESC"],
+      "rationale": "PendingTransactions filters by status='PENDING' then sorts by created_at. Composite index would enable both filter and sort in one index scan.",
+      "sql": "CREATE INDEX idx_transactions_status_created_at ON transactions (status, created_at DESC);"
+    },
+    {
+      "priority": "LOW",
+      "table": "fraud_predictions",
+      "columns": ["decision"],
+      "rationale": "GetDashboardSummary aggregates COUNT(*) FILTER (WHERE decision = 'REVIEW'/'ALLOW'). A partial index on decision could help, but aggregate over 9K rows is only 2.4ms.",
+      "sql": "CREATE INDEX idx_fraud_predictions_decision ON fraud_predictions (decision);"
+    }
+  ]
+}

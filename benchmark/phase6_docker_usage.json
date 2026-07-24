@@ -1,0 +1,136 @@
+{
+  "phase": 6,
+  "title": "Docker Resource Usage",
+  "method": "docker stats (5 samples over 20s)",
+  "host": {
+    "ram": "11.53 GiB",
+    "os": "Windows 11 / Docker Desktop"
+  },
+  "services": [
+    {
+      "name": "fintech-kafka",
+      "container": "Kafka Broker",
+      "cpu_avg": "32.8%",
+      "cpu_peak": "139.7%",
+      "memory_avg_mb": 432.6,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "3.67%",
+      "net_io": "7.2 MB / 1.3 MB",
+      "block_io": "29.5 MB / 22 MB",
+      "notes": "CPU spikes correlated with transaction bursts; healthiest memory usage"
+    },
+    {
+      "name": "fintech-ml-engine",
+      "container": "ML Inference (FastAPI + XGBoost)",
+      "cpu_avg": "0.4%",
+      "cpu_peak": "1.0%",
+      "memory_avg_mb": 184.5,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "1.56%",
+      "net_io": "8.3 MB / 5.8 MB",
+      "block_io": "492 MB / 8.5 MB",
+      "notes": "Largest memory consumer per-service; Python process with loaded XGBoost model. High block I/O from reading model files."
+    },
+    {
+      "name": "fintech-zookeeper",
+      "container": "Zookeeper",
+      "cpu_avg": "0.9%",
+      "cpu_peak": "2.4%",
+      "memory_avg_mb": 181.3,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "1.54%",
+      "net_io": "84 kB / 53 kB",
+      "block_io": "134 MB / 1.4 MB",
+      "notes": "Java process; uses 180MB baseline even at idle. JVM heap overhead."
+    },
+    {
+      "name": "fintech-postgres",
+      "container": "PostgreSQL Database",
+      "cpu_avg": "1.9%",
+      "cpu_peak": "2.9%",
+      "memory_avg_mb": 55.8,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "0.47%",
+      "net_io": "131 MB / 12.9 GB",
+      "block_io": "44.7 MB / 293 MB",
+      "notes": "Very efficient for ~12K transactions. 13GB of data written (transactions + predictions)."
+    },
+    {
+      "name": "fintech-ingestion-gateway",
+      "container": "Go Ingestion Gateway",
+      "cpu_avg": "0.6%",
+      "cpu_peak": "1.2%",
+      "memory_avg_mb": 45.3,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "0.38%",
+      "net_io": "13.1 GB / 21.9 GB",
+      "block_io": "1.8 MB / 0 B",
+      "notes": "Most network I/O of all services. Go binary ~45MB RSS is very efficient."
+    },
+    {
+      "name": "fintech-redis",
+      "container": "Redis Cache",
+      "cpu_avg": "0.6%",
+      "cpu_peak": "1.3%",
+      "memory_avg_mb": 12.4,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "0.10%",
+      "net_io": "94.1 MB / 61.8 MB",
+      "block_io": "55.5 MB / 78.5 MB",
+      "notes": "Minimal resource usage. AOF persistence causing block I/O."
+    },
+    {
+      "name": "fintech-dashboard",
+      "container": "React Frontend (Nginx SPA)",
+      "cpu_avg": "0.0%",
+      "cpu_peak": "0.0%",
+      "memory_avg_mb": 15.5,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "0.13%",
+      "net_io": "23 kB / 1.0 MB",
+      "block_io": "8.7 MB / 4.1 kB",
+      "notes": "Static file server (Nginx). Only serves built assets. Zero CPU idle."
+    },
+    {
+      "name": "fintech-simulator",
+      "container": "Transaction Simulator",
+      "cpu_avg": "0.2%",
+      "cpu_peak": "0.3%",
+      "memory_avg_mb": 8.7,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "0.07%",
+      "net_io": "1.0 MB / 1.4 MB",
+      "block_io": "7.1 MB / 0 B",
+      "notes": "Tiny Go binary. At 10 TPS currently. Negligible footprint."
+    },
+    {
+      "name": "fintech-nginx",
+      "container": "Nginx Reverse Proxy",
+      "cpu_avg": "0.0%",
+      "cpu_peak": "0.0%",
+      "memory_avg_mb": 2.4,
+      "memory_limit_gb": 11.53,
+      "memory_pct_avg": "0.02%",
+      "net_io": "8.4 kB / 790 B",
+      "block_io": "3.6 MB / 4.1 kB",
+      "notes": "Minimal resource usage. Idle because dashboard/gateway are accessed directly by benchmark."
+    }
+  ],
+  "totals": {
+    "total_cpu_avg": "37.4%",
+    "total_memory_mb": 938.5,
+    "total_memory_pct": "7.95%",
+    "total_disk_io_read_mb": "906 MB",
+    "total_disk_io_write_mb": "403 MB"
+  },
+  "findings": [
+    "Total system footprint: ~940 MB RAM, ~37% CPU — well within typical production host limits",
+    "Kafka is the most resource-intensive service with CPU spikes up to 140%, but averages ~33%",
+    "ML Engine and Zookeeper are tied for highest steady-state RAM usage (~180MB each)",
+    "Go services (Gateway, Simulator) are extremely memory-efficient at 8-45MB each",
+    "PostgreSQL is very lean at 55MB for 12K+ rows — the SQLite of OLTP databases",
+    "Redis at 12MB is negligible — AOF persistence overhead is minor",
+    "Dashboard (Nginx SPA) has zero CPU and 15MB memory — static file serving is free",
+    "The entire stack fits comfortably in under 1GB RAM"
+  ]
+}

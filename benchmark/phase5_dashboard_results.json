@@ -1,0 +1,92 @@
+{
+  "phase": 5,
+  "title": "Dashboard Lighthouse Performance",
+  "tool": {
+    "name": "Lighthouse",
+    "version": "13.4.1"
+  },
+  "url": "http://localhost:3001",
+  "fetch_time": "2026-07-24T15:34:49Z",
+  "scores": {
+    "performance": 59,
+    "accessibility": 96,
+    "best_practices": 100,
+    "seo": 90
+  },
+  "core_web_vitals": {
+    "first_contentful_paint": {
+      "value_ms": 6479.91,
+      "display": "6.5s",
+      "rating": "poor"
+    },
+    "largest_contentful_paint": {
+      "value_ms": 18350.92,
+      "display": "18.4s",
+      "rating": "poor"
+    },
+    "cumulative_layout_shift": {
+      "value": 0.0,
+      "display": "0",
+      "rating": "good"
+    },
+    "speed_index": {
+      "value_ms": 6479.91,
+      "display": "6.5s",
+      "rating": "poor"
+    },
+    "time_to_interactive": {
+      "value_ms": 18567.47,
+      "display": "18.6s",
+      "rating": "poor"
+    },
+    "total_blocking_time": {
+      "value_ms": 69.5,
+      "display": "70ms",
+      "rating": "good"
+    }
+  },
+  "diagnostics": {
+    "num_requests": 15,
+    "num_scripts": 6,
+    "num_stylesheets": 1,
+    "num_fonts": 3,
+    "total_byte_weight_bytes": 3320747,
+    "total_byte_weight_kb": 3243,
+    "max_rtt_ms": 0.72,
+    "max_server_latency_ms": 32.48,
+    "total_task_time_ms": 444,
+    "main_document_transfer_size_bytes": 1145
+  },
+  "large_files": [
+    {"url": "/api/predictions", "size_kb": 2269, "type": "API response (JSON)"},
+    {"url": "/assets/vendor-recharts-*.js", "size_kb": 306, "type": "JS bundle"},
+    {"url": "/assets/vendor-react-*.js", "size_kb": 266, "type": "JS bundle"},
+    {"url": "/assets/vendor-*.js", "size_kb": 108, "type": "JS bundle"},
+    {"url": "/assets/index-*.css", "size_kb": 85, "type": "CSS bundle"}
+  ],
+  "opportunities": {
+    "unused_javascript": {
+      "score": 0,
+      "wasted_ms": 1950,
+      "detail": "~1.95s of script execution time is unused; vendor bundles could be code-split"
+    }
+  },
+  "findings": [
+    "Performance score 59/100 — primarily due to 18.4s LCP caused by loading 2.26MB of prediction data on initial page load",
+    "Accessibility 96/100 — excellent, minimal issues",
+    "Best Practices 100/100 — perfect score",
+    "SEO 90/100 — good",
+    "CLS is 0.0 — no layout shift issues, excellent",
+    "TBT is 70ms — minimal main thread blocking",
+    "The single biggest performance bottleneck is the /api/predictions call returning 2.26MB JSON on first paint, blocking LCP/TTI/Speed Index",
+    "Unused JS (1.95s wasted) — vendor libraries (Recharts, React) are shipped as full bundles without code splitting",
+    "Server response time (32ms) and RTT (0.7ms) are excellent — the bottleneck is data transfer and parsing, not network"
+  ],
+  "recommendations": [
+    "Implement pagination or lazy loading for the predictions list — don't load 2.26MB of JSON on initial page load",
+    "Add server-side pagination to /api/predictions endpoint (currently returns ALL predictions)",
+    "Code-split vendor bundles (Recharts is only needed on chart pages, not landing)",
+    "Consider React.lazy() + Suspense for route-based code splitting",
+    "Enable gzip/brotli compression on the dashboard nginx server for JS/CSS assets"
+  ]
+}

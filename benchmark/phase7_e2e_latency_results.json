@@ -1,0 +1,37 @@
+{
+  "phase": 7,
+  "title": "End-to-End Latency Benchmark",
+  "samples": 20,
+  "gateway_accepted": 20,
+  "db_transaction_stored": 0,
+  "db_prediction_stored": 0,
+  "dashboard_visible": 20,
+  "gateway_latency_ms": {
+    "count": 20,
+    "avg_ms": 66.47,
+    "median_ms": 67.06,
+    "min_ms": 50.59,
+    "max_ms": 96.9,
+    "stdev_ms": 11.18,
+    "p90_ms": 76.79,
+    "p95_ms": 96.9,
+    "p99_ms": 96.9
+  },
+  "e2e_latency_ms": {
+    "count": 20,
+    "avg_ms": 425.36,
+    "median_ms": 427.34,
+    "min_ms": 408.42,
+    "max_ms": 454.93,
+    "stdev_ms": 10.98,
+    "p90_ms": 433.89,
+    "p95_ms": 454.93,
+    "p99_ms": 454.93
+  },
+  "completion_rate": {
+    "gateway_pct": 100.0,
+    "db_transaction_pct": 0.0,
+    "db_prediction_pct": 0.0,
+    "dashboard_pct": 100.0
+  }
+}

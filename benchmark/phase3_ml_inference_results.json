@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "title": "ML Inference Benchmark",
+  "endpoint": "http://localhost:8000/predict",
+  "total_requests": 2000,
+  "warmup_requests": 50,
+  "wall_time_seconds": 50.95,
+  "successes": 2000,
+  "failures": 0,
+  "fraud_count": 0,
+  "non_fraud_count": 2000,
+  "throughput_per_sec": 39.25,
+  "latency": {
+    "count": 2000,
+    "avg_ms": 25.32,
+    "median_ms": 29.52,
+    "min_ms": 10.86,
+    "max_ms": 65.43,
+    "stdev_ms": 8.57,
+    "p50_ms": 29.52,
+    "p90_ms": 33.93,
+    "p95_ms": 35.28,
+    "p99_ms": 40.07,
+    "p999_ms": 54.88
+  }
+}
