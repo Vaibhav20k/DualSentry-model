@@ -10,6 +10,13 @@ import (
 func RateLimit(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		// Skip rate limiting for infrastructure endpoints
+		switch r.URL.Path {
+		case "/metrics", "/health", "/health/live", "/health/ready":
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		ip := ClientIP(r)
 
 		allowed, err := ratelimit.Allow(

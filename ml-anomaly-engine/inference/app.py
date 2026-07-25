@@ -6,6 +6,7 @@ from fastapi import (
     HTTPException,
     Depends,
 )
+from prometheus_fastapi_instrumentator import Instrumentator
 from services.audit_logger import AuditLogger
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
@@ -70,6 +71,7 @@ app = FastAPI(
     description="Real-Time Fraud Detection using XGBoost",
     version="1.0.0",
 )
+Instrumentator().instrument(app).expose(app)
 
 
 # ==========================================================
