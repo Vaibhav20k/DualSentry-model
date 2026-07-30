@@ -153,7 +153,7 @@ services:
       REDIS_PORT: 6379
       KAFKA_BROKERS: kafka:29092
       KAFKA_TOPIC: transactions.raw
-      CORS_ALLOWED_ORIGIN: http://localhost:3001
+      CORS_ALLOWED_ORIGIN: reflect
       ML_SERVICE_URL: http://ml-anomaly-engine:8000
     ports:
     - "8080:8080"
@@ -203,8 +203,6 @@ services:
     restart: unless-stopped
     ports:
       - "3001:80"
-    environment:
-      VITE_API_BASE_URL: http://localhost:8080
     networks:
       - fintech-network
 

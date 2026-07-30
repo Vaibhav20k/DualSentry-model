@@ -1,0 +1,114 @@
+{
+  "dataset_name": "IBM AML Stateful Behavioral Feature Dataset",
+  "dataset_version": "1.0.0",
+  "preprocessing_version": "production-v1",
+  "original_data_source": "IBM Synthetic Anti-Money Laundering Dataset (HI-Small_Trans.csv & LI-Small_Trans.csv)",
+  "target_column": "is_fraud",
+  "chunk_size": 250000,
+  "state_management": "Stateful AccountState tracking strictly historical transactions (Welford's algorithm)",
+  "leakage_prevention": "Features computed from pre-transaction state, updated after transaction feature generation",
+  "random_seed": 42,
+  "split_sizes": {
+    "train_ratio": 0.70,
+    "valid_ratio": 0.15,
+    "test_ratio": 0.15
+  },
+  "features": [
+    {
+      "name": "amount",
+      "category": "Monetary",
+      "type": "float64",
+      "description": "Transaction payment amount"
+    },
+    {
+      "name": "spending_deviation_score",
+      "category": "Monetary",
+      "type": "float64",
+      "description": "Z-score of transaction amount relative to sender account's historical spending mean & standard deviation (Welford algorithm)"
+    },
+    {
+      "name": "hour",
+      "category": "Temporal",
+      "type": "int64",
+      "description": "Hour of transaction execution (0 to 23)"
+    },
+    {
+      "name": "day_of_week",
+      "category": "Temporal",
+      "type": "int64",
+      "description": "Day of week (0 = Monday, 6 = Sunday)"
+    },
+    {
+      "name": "month",
+      "category": "Temporal",
+      "type": "int64",
+      "description": "Month of transaction execution (1 to 12)"
+    },
+    {
+      "name": "is_weekend",
+      "category": "Temporal",
+      "type": "int64",
+      "description": "Binary indicator for weekend transactions (1 if Saturday/Sunday, else 0)"
+    },
+    {
+      "name": "time_since_last_transaction",
+      "category": "Temporal",
+      "type": "float64",
+      "description": "Elapsed seconds since account's previous transaction (0.0 for first transaction)"
+    },
+    {
+      "name": "velocity_score",
+      "category": "Temporal",
+      "type": "int64",
+      "description": "Historical cumulative count of prior transactions executed by sender account"
+    },
+    {
+      "name": "is_first_transaction",
+      "category": "Temporal",
+      "type": "int64",
+      "description": "Binary flag indicating if this is sender account's first observed transaction (1 if first, else 0)"
+    },
+    {
+      "name": "is_new_receiver",
+      "category": "Relationship",
+      "type": "int64",
+      "description": "Binary flag indicating if beneficiary receiver account is seen for the first time by sender (1 if new, else 0)"
+    },
+    {
+      "name": "is_new_bank",
+      "category": "Relationship",
+      "type": "int64",
+      "description": "Binary flag indicating if beneficiary bank ID has never been transferred to previously by sender (1 if new, else 0)"
+    },
+    {
+      "name": "is_new_payment_format",
+      "category": "Relationship",
+      "type": "int64",
+      "description": "Binary flag indicating if payment format/channel is new for this sender account (1 if new, else 0)"
+    },
+    {
+      "name": "is_cross_bank_transfer",
+      "category": "Relationship",
+      "type": "int64",
+      "description": "Binary indicator showing if sender bank differs from receiver bank (1 if inter-bank, else 0)"
+    },
+    {
+      "name": "is_cross_currency_transfer",
+      "category": "Relationship",
+      "type": "int64",
+      "description": "Binary indicator showing if payment currency differs from receiving currency (1 if FX transfer, else 0)"
+    },
+    {
+      "name": "payment_channel",
+      "category": "Transaction",
+      "type": "object",
+      "description": "Categorical payment format/channel used (e.g. ACH, Wire, Credit Card, Cheque)"
+    },
+    {
+      "name": "is_fraud",
+      "category": "Target",
+      "type": "int64",
+      "description": "Binary ground-truth target label (1 = Laundering / Fraud, 0 = Legitimate)"
+    }
+  ]
+}

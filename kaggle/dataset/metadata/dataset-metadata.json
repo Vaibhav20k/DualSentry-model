@@ -1,0 +1,10 @@
+{
+  "title": "IBM AML Stateful Behavioral Feature Engineering Dataset",
+  "id": "fintechpipeline/ibm-aml-stateful-behavioral-features",
+  "licenses": [
+    {
+      "name": "CC-BY-4.0"
+    }
+  ],
+  "description": "Production-grade behavioral feature dataset engineered from IBM Anti-Money Laundering synthetic transaction graphs (HI-Small & LI-Small). Features stateful streaming account profiles, zero target leakage, Welford's online variance calculation, and reproducible 70/15/15 stratified train/valid/test splits."
+}

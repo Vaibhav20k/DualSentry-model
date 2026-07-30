@@ -42,7 +42,7 @@ func main() {
 	// -----------------------------
 	// ML Client
 	// -----------------------------
-	mlClient := ml.NewClient("http://localhost:8000")
+	mlClient := ml.NewClient("")
 
 	// -----------------------------
 	// Decision Engine

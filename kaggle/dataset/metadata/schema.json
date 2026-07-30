@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IBM AML Stateful Behavioral Feature Dataset Schema",
+  "type": "object",
+  "required": [
+    "amount",
+    "spending_deviation_score",
+    "hour",
+    "day_of_week",
+    "month",
+    "is_weekend",
+    "time_since_last_transaction",
+    "velocity_score",
+    "is_first_transaction",
+    "is_new_receiver",
+    "is_new_bank",
+    "is_new_payment_format",
+    "is_cross_bank_transfer",
+    "is_cross_currency_transfer",
+    "payment_channel",
+    "is_fraud"
+  ],
+  "properties": {
+    "amount": { "type": "number", "minimum": 0.0 },
+    "spending_deviation_score": { "type": "number" },
+    "hour": { "type": "integer", "minimum": 0, "maximum": 23 },
+    "day_of_week": { "type": "integer", "minimum": 0, "maximum": 6 },
+    "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+    "is_weekend": { "type": "integer", "enum": [0, 1] },
+    "time_since_last_transaction": { "type": "number", "minimum": 0.0 },
+    "velocity_score": { "type": "integer", "minimum": 0 },
+    "is_first_transaction": { "type": "integer", "enum": [0, 1] },
+    "is_new_receiver": { "type": "integer", "enum": [0, 1] },
+    "is_new_bank": { "type": "integer", "enum": [0, 1] },
+    "is_new_payment_format": { "type": "integer", "enum": [0, 1] },
+    "is_cross_bank_transfer": { "type": "integer", "enum": [0, 1] },
+    "is_cross_currency_transfer": { "type": "integer", "enum": [0, 1] },
+    "payment_channel": { "type": "string" },
+    "is_fraud": { "type": "integer", "enum": [0, 1] }
+  }
+}

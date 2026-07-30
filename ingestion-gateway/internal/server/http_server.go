@@ -202,18 +202,42 @@ func metricsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// corsMiddleware handles CORS headers.
-// The allowed origin is configurable via the CORS_ALLOWED_ORIGIN
-// environment variable, defaulting to the local Vite dev server.
+// corsMiddleware handles CORS headers for cross-origin requests.
+//
+// When the frontend is served through the Nginx reverse proxy, all requests
+// are same-origin (http://localhost → http://localhost), so no CORS is needed.
+//
+// When the frontend runs outside Docker (e.g., `npm run dev` on port 5173),
+// the browser's Origin header is reflected back to allow the dev workflow.
+//
+// Behavior is configurable via the CORS_ALLOWED_ORIGIN environment variable:
+//   - "reflect" (default if unset):  reflect the request's Origin header
+//   - "*":                             allow any origin (insecure, avoid in prod)
+//   - "http://example.com":           allow a specific origin
+//   - "" (empty):                     disable CORS entirely (safe behind Nginx)
 func corsMiddleware(next http.Handler) http.Handler {
-	allowedOrigin := os.Getenv("CORS_ALLOWED_ORIGIN")
-	if allowedOrigin == "" {
-		allowedOrigin = "http://localhost:5173"
-	}
+	corsMode := os.Getenv("CORS_ALLOWED_ORIGIN")
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		origin := r.Header.Get("Origin")
+
+		// When CORS_ALLOWED_ORIGIN is unset, reflect the request origin.
+		// When set explicitly, use that value (or disable if empty).
+		var allowedOrigin string
+		switch {
+		case corsMode == "reflect" || corsMode == "":
+			allowedOrigin = origin
+		case corsMode == "*":
+			allowedOrigin = "*"
+		default:
+			allowedOrigin = corsMode
+		}
+
+		if allowedOrigin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+			w.Header().Set("Vary", "Origin")
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Idempotency-Key")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)
