@@ -6,7 +6,7 @@
 
 ## 📌 Dataset Overview
 
-This dataset provides production-grade **stateful behavioral feature engineering** extracted from the synthetic IBM Anti-Money Laundering (AML) transaction datasets (`HI-Small_Trans.csv` and `LI-Small_Trans.csv`).
+This dataset provides production-grade **stateful behavioral feature engineering** extracted from the synthetic IBM Anti-Money Laundering (AML) transaction datasets (`HI-Small_Trans.csv` and `LI-Small_Trans.csv` combined, totaling **12,002,394 transactions**).
 
 Traditional tabular fraud datasets often use global aggregates (e.g. mean transaction amount across all history), which introduces catastrophic **data leakage** from future transactions into past features. This dataset models financial transactions as an online streaming sequence. For every single transaction, features are calculated **strictly from historical account state** before the account state is updated.
 
@@ -24,13 +24,13 @@ The raw transaction graph data originates from IBM Research:
 ## ⚙️ Stateful Behavioral Feature Generation & Welford's Algorithm
 
 To simulate real-world streaming ingestion gateways, each sender account maintains an `AccountState` object during processing:
-- **Online Mean & Variance**: Tracks running mean and standard deviation of account spending using **Welford's Algorithm** for online updates without storing full transaction history.
-- **Velocity Tracking**: Accumulates exact account transaction counts (`velocity_score`).
+- **Online Mean & Variance**: Tracks running mean and standard deviation of account spending using **Welford's Algorithm** for online updates without storing full transaction history. Standard deviation is clamped at minimum $1.0$ to prevent division by near-zero variance.
+- **Velocity Tracking**: Accumulates exact lifetime account transaction counts (`velocity_score`).
 - **Dynamic Sets**: Maintains sets of previously seen beneficiary receivers, target bank IDs, payment channels, and transaction currencies.
 
 ---
 
-## 🛡️ Target Leakage Prevention Strategy
+## 🛡️ Target Leakage Prevention Strategy & Global Pre-Sort
 
 Data leakage is strictly eliminated through an explicit two-stage order of execution per transaction:
 
@@ -53,23 +53,35 @@ Data leakage is strictly eliminated through an explicit two-stage order of execu
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 4. Update AccountState(A) with Current Transaction          │
-└─────────────────────────────────────────────────────────────┘
+└──────────────────────────────┬──────────────────────────────┘
 ```
+
+*Note: Raw input files `HI-Small_Trans.csv` and `LI-Small_Trans.csv` are combined and globally sorted by `[Account, Timestamp]` prior to feature extraction to guarantee strict chronological processing across overlapping account histories.*
 
 ---
 
-## 📊 Train / Validation / Test Split Methodology
+## 📊 Evaluation Strategies & Data Splits
 
-The dataset is partitioned into reproducible, stratified splits maintaining exact class balance (~0.1% positive laundering fraud ratio):
+The dataset supports **two complementary evaluation strategies** (70% Train, 15% Validation, 15% Test):
+
+### Strategy A: Benchmark Split (Stratified Random)
+Located in `outputs/`. Suitable for standardized ML model benchmarking. Class balance (~0.0729% laundering fraud ratio) is strictly preserved across all splits.
 
 | Partition | Filename | Row Count | Percentage | Fraud Ratio |
 | :--- | :--- | :---: | :---: | :---: |
-| **Combined** | `training_dataset_hi_li_small.parquet` | ~5,300,000 | 100.0% | ~0.104% |
-| **Train** | `train.parquet` | ~3,710,000 | 70.0% | ~0.104% |
-| **Validation** | `valid.parquet` | ~795,000 | 15.0% | ~0.104% |
-| **Test** | `test.parquet` | ~795,000 | 15.0% | ~0.104% |
+| **Combined** | `training_dataset_hi_li_small.parquet` | 12,002,394 | 100.0% | 0.0729% |
+| **Train** | `outputs/train.parquet` | 8,401,675 | 70.0% | 0.0729% |
+| **Validation** | `outputs/valid.parquet` | 1,800,359 | 15.0% | 0.0729% |
+| **Test** | `outputs/test.parquet` | 1,800,360 | 15.0% | 0.0729% |
 
-*Splitting performed via `sklearn.model_selection.train_test_split` with `random_state=42` and `stratify=df['is_fraud']`.*
+### Strategy B: Chronological Split (Deterministic Temporal)
+Located in `chronological/`. Suitable for temporal backtesting and out-of-time production leakage verification. Data is partitioned strictly by time.
+
+| Partition | Filename | Row Count | Percentage | Fraud Ratio | Timestamp Range |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| **Train** | `chronological/train.parquet` | 8,401,675 | 70.0% | 0.0720% | Month 9, Hour 0–16 |
+| **Validation** | `chronological/valid.parquet` | 1,800,359 | 15.0% | 0.0906% | Month 9, Hour 16–20 |
+| **Test** | `chronological/test.parquet` | 1,800,360 | 15.0% | 0.0588% | Month 9, Hour 20–23 |
 
 ---
 
@@ -80,15 +92,15 @@ The dataset contains 16 columns (15 engineered features + 1 target label):
 ### Monetary Features
 - `amount` (`float64`): Transaction amount in USD equivalent.
 - `spending_deviation_score` (`float64`): Z-score of transaction amount relative to sender account's historical spending mean and standard deviation:
-  $$\text{spending\_deviation\_score} = \frac{\text{amount} - \mu_{\text{historical}}}{\sigma_{\text{historical}}}$$
+  $$\text{spending\_deviation\_score} = \frac{\text{amount} - \mu_{\text{historical}}}{\max(\sigma_{\text{historical}}, 1.0)}$$
 
 ### Temporal Features
 - `hour` (`int64`): Hour of transaction (0 to 23).
 - `day_of_week` (`int64`): Day of week (0 = Monday, 6 = Sunday).
 - `month` (`int64`): Month of year (1 to 12).
 - `is_weekend` (`int64`): 1 if transaction occurred on Saturday or Sunday, else 0.
-- `time_since_last_transaction` (`float64`): Elapsed seconds since sender account's prior transaction.
-- `velocity_score` (`int64`): Count of prior transactions executed by sender account.
+- `time_since_last_transaction` (`float64`): Elapsed seconds since sender account's immediately preceding transaction.
+- `velocity_score` (`int64`): Lifetime cumulative count of prior transactions executed by sender account.
 - `is_first_transaction` (`int64`): 1 if sender's first transaction, else 0.
 
 ### Relationship & Graph Features
@@ -99,64 +111,33 @@ The dataset contains 16 columns (15 engineered features + 1 target label):
 - `is_cross_currency_transfer` (`int64`): 1 if `Payment Currency != Receiving Currency`, else 0.
 
 ### Transaction Channel & Target
-- `payment_channel` (`string`): Payment method format (e.g. ACH, Wire, Credit Card, Cheque).
+- `payment_channel` (`string`): Payment method format (ACH, Wire, Credit Card, Cheque, Cash, Bitcoin, Reinvestment).
 - `is_fraud` (`int64`): Ground truth target label (1 = Laundering / Fraud, 0 = Legitimate).
 
 ---
 
 ## 💻 Example Loading Code
 
-### Python (Pandas & PyArrow)
+### Python (Pandas)
 ```python
 import pandas as pd
 
-# Load train, validation, and test splits
-train_df = pd.read_parquet("kaggle/dataset/outputs/train.parquet")
-valid_df = pd.read_parquet("kaggle/dataset/outputs/valid.parquet")
-test_df = pd.read_parquet("kaggle/dataset/outputs/test.parquet")
+# Load benchmark splits
+train_b = pd.read_parquet("kaggle/dataset/outputs/train.parquet")
+valid_b = pd.read_parquet("kaggle/dataset/outputs/valid.parquet")
+test_b  = pd.read_parquet("kaggle/dataset/outputs/test.parquet")
 
-print("Train shape:", train_df.shape)
-print("Fraud ratio:", train_df["is_fraud"].mean())
-```
+# Load chronological splits
+train_c = pd.read_parquet("kaggle/dataset/chronological/train.parquet")
+valid_c = pd.read_parquet("kaggle/dataset/chronological/valid.parquet")
+test_c  = pd.read_parquet("kaggle/dataset/chronological/test.parquet")
 
-### Python (Polars)
-```python
-import polars as pl
-
-train_df = pl.read_parquet("kaggle/dataset/outputs/train.parquet")
-print(train_df.glimpse())
-```
-
-### SQL (DuckDB)
-```sql
-SELECT 
-    payment_channel,
-    COUNT(*) AS total_tx,
-    AVG(is_fraud) AS fraud_rate,
-    AVG(spending_deviation_score) AS avg_spending_zscore
-FROM 'kaggle/dataset/outputs/train.parquet'
-GROUP BY payment_channel
-ORDER BY fraud_rate DESC;
+print("Benchmark Train shape:", train_b.shape)
+print("Chronological Train shape:", train_c.shape)
 ```
 
 ---
 
-## 📖 Citation Information
+## ⚖️ License & Attribution
 
-If you use this dataset in your research or Kaggle notebooks, please cite:
-
-```bibtex
-@misc{ibm_aml_stateful_features_2026,
-  title={IBM AML Stateful Behavioral Feature Engineering Dataset},
-  author={Fintech Pipeline Engineering Team},
-  year={2026},
-  publisher={Kaggle},
-  howpublished={\url{https://www.kaggle.com/datasets/fintechpipeline/ibm-aml-stateful-behavioral-features}}
-}
-```
-
----
-
-## ⚖️ License Considerations
-
-This dataset is distributed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**. Users are free to share and adapt the material for academic and commercial purposes, provided appropriate attribution is given to IBM Research for the underlying raw transaction dataset and the Fintech Pipeline project for feature engineering.
+Distributed under **Creative Commons Attribution 4.0 International License (CC BY 4.0)**.
