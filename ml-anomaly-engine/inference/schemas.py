@@ -23,7 +23,7 @@ class PredictionRequest(BaseModel):
 
     velocity_score: float = Field(ge=0)
 
-    spending_deviation_score: float = Field(ge=0)
+    spending_deviation_score: float
 
     is_first_transaction: int = Field(ge=0, le=1)
 

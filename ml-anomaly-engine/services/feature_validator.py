@@ -20,19 +20,33 @@ class FeatureValidator:
 
     @staticmethod
     def _load_validation_rules():
+        default_rules = {
+            "allowed_payment_channels": [
+                "CARD",
+                "UPI",
+                "NET_BANKING",
+                "WALLET",
+            ],
+            "min_amount": 0.01,
+            "max_amount": 100000000.0,
+        }
 
-        model = registry.get_active_model()
+        try:
+            model = registry.get_active_model()
+            metadata_path = (
+                BASE_DIR
+                / model.get("path", "models/saved_models_v2")
+                / model.get("artifacts", {}).get("metadata", "xgboost_metadata_hi_li_small.json")
+            )
 
-        metadata_path = (
-            BASE_DIR
-            / model["path"]
-            / model["artifacts"]["metadata"]
-        )
+            if metadata_path.exists():
+                with open(metadata_path, "r", encoding="utf-8") as f:
+                    metadata = json.load(f)
+                return metadata.get("validation", default_rules)
+        except Exception:
+            pass
 
-        with open(metadata_path, "r") as f:
-            metadata = json.load(f)
-
-        return metadata["validation"]
+        return default_rules
 
     @staticmethod
     def validate(transaction: dict):

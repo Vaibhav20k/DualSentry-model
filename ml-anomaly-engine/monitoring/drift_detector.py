@@ -11,12 +11,16 @@ from config.settings import (
 
 def load_training_stats() -> Dict[str, float]:
 
-    with open(REGISTRY_PATH, "r") as file:
+    with open(REGISTRY_PATH, "r", encoding="utf-8") as file:
         registry = json.load(file)
 
-    active_model = registry["active_model"]
+    active_model = registry.get("active_model")
 
-    return registry["models"][active_model]["training_stats"]
+    for model in registry.get("models", []):
+        if model.get("model_id") == active_model:
+            return model.get("training_stats", {})
+
+    return {}
 
 
 def percentage_drift(

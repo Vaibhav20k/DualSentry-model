@@ -62,17 +62,16 @@ def retrain_pipeline():
         result["probabilities"],
     )
 
+    import numpy as np
+
+    probs = result["probabilities"]
+    confidences = np.maximum(probs, 1.0 - probs)
+
     training_stats = {
-        "mean_amount": float(dataset["amount"].mean()),
-        "mean_fraud_probability": float(
-            result["probabilities"].mean()
-        ),
-        "mean_confidence": float(
-            result["probabilities"].mean()
-        ),
-        "fraud_rate": float(
-            dataset["prediction"].mean()
-        ),
+        "mean_amount": float(dataframe["amount"].mean()),
+        "mean_fraud_probability": float(probs.mean()),
+        "mean_confidence": float(confidences.mean()),
+        "fraud_rate": float(result["predictions"].mean()),
     }
 
     print(metrics)

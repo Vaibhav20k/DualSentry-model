@@ -156,7 +156,7 @@ class FeaturePipeline:
 
             payment_format=payment,
 
-            bank=sender_bank,
+            bank=receiver_bank,
 
             currency=payment_currency,
         )

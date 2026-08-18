@@ -24,17 +24,17 @@
             "created_at": "2026-07-21",
             "updated_at": "2026-07-21",
             "metrics": {
-                "accuracy": 0.0,
-                "precision": 0.0,
-                "recall": 0.0,
-                "f1_score": 0.0,
-                "roc_auc": 0.0
+                "accuracy": 0.9994,
+                "precision": 0.6285,
+                "recall": 0.2927,
+                "f1_score": 0.3994,
+                "roc_auc": 0.9779
             },
             "training_stats": {
-                "mean_amount": 0.0,
-                "fraud_rate": 0.0,
-                "mean_confidence": 0.0,
-                "mean_fraud_probability": 0.0
+                "mean_amount": 1025.45,
+                "fraud_rate": 0.0007,
+                "mean_confidence": 0.995,
+                "mean_fraud_probability": 0.005
             }
         },
         {

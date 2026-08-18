@@ -1,9 +1,19 @@
 {
     "model": "xgboost",
-    "version": "hi_li_small_v1",
-    "threshold": 0.9867,
-    "roc_auc": 0.9782481366025456,
-    "pr_auc": 0.34400005346483903,
+    "version": "2.0.0",
+    "threshold": 0.9843,
+    "roc_auc": 0.9779,
+    "pr_auc": 0.3306,
     "features": 15,
-    "dataset": "HI-Small + LI-Small"
+    "dataset": "IBM Financial AML HI-Small + LI-Small",
+    "validation": {
+        "allowed_payment_channels": [
+            "CARD",
+            "UPI",
+            "NET_BANKING",
+            "WALLET"
+        ],
+        "min_amount": 0.01,
+        "max_amount": 100000000.0
+    }
 }

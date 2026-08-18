@@ -35,8 +35,8 @@ class AccountState:
 
     known_payment_formats: set[str] = field(default_factory=set)
 
-    known_banks: set[int] = field(
-    default_factory=set,
+    known_banks: set[int | str] = field(
+        default_factory=set,
     )
 
     known_currencies: set[str] = field(
@@ -86,9 +86,10 @@ class AccountState:
         )
 
         return max(
-            variance ** 0.5,
+            max(0.0, variance) ** 0.5,
             1.0,
         )
+
     def spending_zscore(
         self,
         amount: float,
@@ -96,10 +97,6 @@ class AccountState:
 
         if self.transaction_count < 2:
             return 0.0
-
-        return (
-            amount - self.mean_amount
-        ) / self.std_amount
 
         return (
             amount - self.mean_amount
@@ -113,10 +110,12 @@ class AccountState:
         if self.last_timestamp is None:
             return 0.0
 
-        return (
+        elapsed = (
             timestamp -
             self.last_timestamp
         ).total_seconds()
+
+        return max(0.0, elapsed)
 
     def velocity_score(
         self,
@@ -142,7 +141,7 @@ class AccountState:
 
     def is_new_bank(
         self,
-        bank: int,
+        bank: int | str,
     ) -> bool:
 
         return (
@@ -156,7 +155,7 @@ class AccountState:
         timestamp: datetime,
         receiver: str,
         payment_format: str,
-        bank: int,
+        bank: int | str,
         currency: str,
     ) -> None:
 

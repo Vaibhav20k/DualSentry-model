@@ -96,29 +96,16 @@ class DriftMonitor:
 
             return abs(live - train) / abs(train)
 
-        if "mean_amount" in training:
-
+        if "mean_amount" in training and training["mean_amount"] != 0:
             score += compare(
                 current["average_amount"],
                 training["mean_amount"],
             )
-
-            comparisons += 1
-
-        if "mean_confidence" in training:
-
-            comparisons += 1
-
-        if "mean_fraud_probability" in training:
-
             comparisons += 1
 
         if comparisons == 0:
-
             drift_score = 0.0
-
         else:
-
             drift_score = round(
                 score / comparisons,
                 4,

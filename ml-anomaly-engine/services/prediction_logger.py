@@ -1,5 +1,5 @@
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 
@@ -18,7 +18,7 @@ class PredictionLogger:
     def log(transaction: dict, prediction: dict):
 
         record = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "transaction": transaction,
             "prediction": prediction,
         }
