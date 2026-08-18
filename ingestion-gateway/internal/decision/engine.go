@@ -3,9 +3,9 @@ package decision
 type Decision string
 
 const (
-	Allow Decision = "ALLOW"
+	Allow  Decision = "ALLOW"
 	Review Decision = "REVIEW"
-	Block Decision = "BLOCK"
+	Block  Decision = "BLOCK"
 )
 
 type Engine struct {

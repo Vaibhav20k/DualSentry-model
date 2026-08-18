@@ -15,8 +15,8 @@ import (
 )
 
 type ConsumerGroupHandler struct {
-	baselineRepo repository.BaselineRepository
-	historyRepo  repository.HistoryRepository
+	baselineRepo   repository.BaselineRepository
+	historyRepo    repository.HistoryRepository
 	predictionRepo repository.FraudPredictionRepository
 
 	mlClient *ml.Client
@@ -67,7 +67,7 @@ func (h *ConsumerGroupHandler) ConsumeClaim(
 		if err := pipeline.Process(featureVector); err != nil {
 			log.Printf("failed to export feature vector: %v", err)
 		}
-				// ---------------------------------------------------------
+		// ---------------------------------------------------------
 		// Run ML Prediction
 		// ---------------------------------------------------------
 
@@ -85,35 +85,33 @@ func (h *ConsumerGroupHandler) ConsumeClaim(
 
 		} else {
 
-			
-
 			decisionResult := h.engine.Decide(
-    			prediction.FraudProbability,
+				prediction.FraudProbability,
 			)
 
 			err = h.predictionRepo.SavePrediction(
-			context.Background(),
-			repository.FraudPrediction{
-				TransactionID:    featureVector.TransactionID,
-				UserID:           featureVector.UserID,
-				FraudProbability: prediction.FraudProbability,
-				Confidence:       prediction.Confidence,
-				Prediction:       prediction.Prediction,
-				Decision:         string(decisionResult),
-				Threshold:        prediction.Threshold,
-				ModelVersion:     prediction.ModelVersion,
-				RiskFlags:        featureVector.RiskFlags,
-			},
-		)
-
-		if err != nil {
-			log.Printf(
-				"failed to save fraud prediction: %v",
-				err,
+				context.Background(),
+				repository.FraudPrediction{
+					TransactionID:    featureVector.TransactionID,
+					UserID:           featureVector.UserID,
+					FraudProbability: prediction.FraudProbability,
+					Confidence:       prediction.Confidence,
+					Prediction:       prediction.Prediction,
+					Decision:         string(decisionResult),
+					Threshold:        prediction.Threshold,
+					ModelVersion:     prediction.ModelVersion,
+					RiskFlags:        featureVector.RiskFlags,
+				},
 			)
-		} else {
-			log.Println("Fraud prediction saved to PostgreSQL.")
-		}
+
+			if err != nil {
+				log.Printf(
+					"failed to save fraud prediction: %v",
+					err,
+				)
+			} else {
+				log.Println("Fraud prediction saved to PostgreSQL.")
+			}
 
 			log.Println("========== ML PREDICTION ==========")
 
@@ -174,12 +172,12 @@ func (c *Consumer) ConsumeGroup() error {
 	}
 
 	handler := &ConsumerGroupHandler{
-	baselineRepo:  c.baselineRepo,
-	historyRepo:   c.historyRepo,
-	predictionRepo: c.predictionRepo,
-	mlClient:      c.mlClient,
-	engine:        c.engine,
-}
+		baselineRepo:   c.baselineRepo,
+		historyRepo:    c.historyRepo,
+		predictionRepo: c.predictionRepo,
+		mlClient:       c.mlClient,
+		engine:         c.engine,
+	}
 
 	log.Println("Joining consumer group...")
 

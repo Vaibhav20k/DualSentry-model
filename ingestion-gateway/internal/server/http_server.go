@@ -1,21 +1,21 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"time"
-	"context"
 
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
 	apihandler "github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/api/handler"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/config"
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/postgres"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/kafka"
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/service"
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/ml"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/middleware"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/ml"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/postgres"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/service"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type HTTPServer struct {
@@ -58,7 +58,6 @@ func NewHTTPServer(
 	if err != nil {
 		panic(err)
 	}
-	
 
 	// ML Client
 	mlClient := ml.NewClient("")
@@ -107,7 +106,7 @@ func NewHTTPServer(
 		"/health/ready",
 		apihandler.ReadyHandler,
 	)
-	
+
 	mux.Handle(
 		"/metrics",
 		promhttp.Handler(),
@@ -124,14 +123,13 @@ func NewHTTPServer(
 	)
 
 	mux.HandleFunc(
-    	"/api/dashboard/trend",
-    	dashboardHandler.GetTrend,
+		"/api/dashboard/trend",
+		dashboardHandler.GetTrend,
 	)
 	mux.HandleFunc(
 		"/api/transactions",
 		transactionHandler.SubmitTransaction,
 	)
-
 
 	// Wrap mux with Prometheus metrics and CORS middleware
 	handler := corsMiddleware(

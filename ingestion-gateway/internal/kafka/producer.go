@@ -1,20 +1,18 @@
 package kafka
 
 import (
-	
 	"encoding/json"
 	"log"
 	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
-	
 )
 
 type Producer struct {
 	producer sarama.SyncProducer
 	topic    string
-}	
+}
 
 func NewProducer(
 	brokers []string,

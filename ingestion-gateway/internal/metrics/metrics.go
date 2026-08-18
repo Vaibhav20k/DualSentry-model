@@ -3,7 +3,6 @@ package metrics
 import "github.com/prometheus/client_golang/prometheus"
 
 var (
-
 	RateLimitRejected = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "gateway_rate_limit_rejected_total",

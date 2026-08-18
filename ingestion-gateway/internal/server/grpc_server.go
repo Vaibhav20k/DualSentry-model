@@ -73,7 +73,7 @@ func New(cfg *config.Config) *GRPCServer {
 		baselineUpdater,
 		mlClient,
 	)
-		// Handler
+	// Handler
 	transactionHandler := handler.NewTransactionHandler(svc)
 
 	pb.RegisterTransactionServiceServer(

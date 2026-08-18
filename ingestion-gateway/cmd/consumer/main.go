@@ -4,20 +4,20 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/config"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/decision"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/kafka"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/ml"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/postgres"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/repository"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
 
 	cfg, err := config.Load()
-	
+
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -57,6 +57,6 @@ type TransactionEvent struct {
 	// Status
 	// ==========================================================
 
-	Status string `json:"status"`
-	RetryCount int `json:"retry_count"`
+	Status     string `json:"status"`
+	RetryCount int    `json:"retry_count"`
 }

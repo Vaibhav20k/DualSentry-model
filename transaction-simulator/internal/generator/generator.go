@@ -40,37 +40,37 @@ func Generate() models.Transaction {
 
 	tx := models.Transaction{
 
-	UserID: user.ID,
+		UserID: user.ID,
 
-	Timestamp: time.Now().Format(time.RFC3339),
+		Timestamp: time.Now().Format(time.RFC3339),
 
-	Amount: math.Round(amount*100) / 100,
+		Amount: math.Round(amount*100) / 100,
 
-	Currency: "INR",
+		Currency: "INR",
 
-	TransactionType: "PURCHASE",
+		TransactionType: "PURCHASE",
 
-	PaymentMethod: user.PreferredPayment,
+		PaymentMethod: user.PreferredPayment,
 
-	PaymentIdentifier: fmt.Sprintf(
-		"user_%s@upi",
-		user.ID[:8],
-	),
+		PaymentIdentifier: fmt.Sprintf(
+			"user_%s@upi",
+			user.ID[:8],
+		),
 
-	Merchant: merchant.Name,
+		Merchant: merchant.Name,
 
-	MerchantCategory: merchant.Category,
+		MerchantCategory: merchant.Category,
 
-	ReceiverAccount: fmt.Sprintf(
-		"ACC%d",
-		rand.Intn(999999),
-	),
+		ReceiverAccount: fmt.Sprintf(
+			"ACC%d",
+			rand.Intn(999999),
+		),
 
-	Location: user.HomeCity,
+		Location: user.HomeCity,
 
-	IPAddress: user.IPAddress,
+		IPAddress: user.IPAddress,
 
-	DeviceID: user.DeviceID,
+		DeviceID: user.DeviceID,
 	}
 
 	InjectFraud(&tx)

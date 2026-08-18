@@ -178,6 +178,7 @@ func (r *HistoryRepository) GetTransactionStats(
 
 	return avgAmount.Float64, stddev.Float64, avgDaily.Float64, nil
 }
+
 // PreferredPaymentMethod returns the payment method used most often.
 func (r *HistoryRepository) PreferredPaymentMethod(
 	ctx context.Context,

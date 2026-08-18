@@ -98,7 +98,7 @@ func (r *FraudPredictionRepository) GetAllPredictions(
 	for rows.Next() {
 
 		var (
-			p repository.FraudPrediction
+			p             repository.FraudPrediction
 			riskFlagsJSON []byte
 		)
 
