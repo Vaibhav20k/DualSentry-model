@@ -57,7 +57,7 @@ jobs:
         run: |
           cd ml-anomaly-engine
           python -m pip install --upgrade pip
-          pip install flake8 pytest pytest-cov
+          pip install flake8 pytest pytest-cov httpx
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Lint & Syntax Check
