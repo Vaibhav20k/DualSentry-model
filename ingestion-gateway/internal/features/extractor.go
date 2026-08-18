@@ -175,11 +175,13 @@ func BuildFeatureVector(
 
 		HourOfDay: hour,
 		DayOfWeek: int(parsedTime.Weekday()),
+		Month:     int(parsedTime.Month()),
 		IsWeekend: parsedTime.Weekday() == time.Saturday ||
 			parsedTime.Weekday() == time.Sunday,
 
 		OutsideActiveHours: outsideActiveHours,
 
+		IsFirstTransaction:   baseline == nil,
 		NewMerchant:          newMerchant,
 		NewDevice:            newDevice,
 		NewLocation:          newLocation,

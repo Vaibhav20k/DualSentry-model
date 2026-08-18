@@ -6,7 +6,7 @@ type FraudPrediction struct {
 	TransactionID    string   `json:"transactionID"`
 	UserID           string   `json:"userID"`
 	FraudProbability float64  `json:"fraudProbability"`
-	Confidence       float64  `json:"Confidence"`
+	Confidence       float64  `json:"confidence"`
 	Prediction       bool     `json:"prediction"`
 	Decision         string   `json:"decision"`
 	Threshold        float64  `json:"threshold"`
@@ -14,20 +14,18 @@ type FraudPrediction struct {
 	RiskFlags        []string `json:"riskFlags"`
 }
 
-
 type DashboardSummary struct {
 	TotalTransactions int     `json:"totalTransactions"`
 	Fraudulent        int     `json:"fraudulent"`
 	Review            int     `json:"review"`
 	Allowed           int     `json:"allowed"`
 	FraudRate         float64 `json:"fraudRate"`
-	}
+}
 
 type FraudTrendPoint struct {
 	Time  string `json:"time"`
 	Count int    `json:"count"`
 }
-
 
 type FraudPredictionRepository interface {
 	SavePrediction(
@@ -52,5 +50,3 @@ type FraudPredictionRepository interface {
 		ctx context.Context,
 	) ([]FraudTrendPoint, error)
 }
-
-

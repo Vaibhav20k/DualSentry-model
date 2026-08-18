@@ -52,6 +52,8 @@ type FeatureVector struct {
 
 	DayOfWeek int
 
+	Month int
+
 	IsWeekend bool
 
 	OutsideActiveHours bool
@@ -59,6 +61,8 @@ type FeatureVector struct {
 	// ==========================================================
 	// Behaviour Features
 	// ==========================================================
+
+	IsFirstTransaction bool
 
 	NewMerchant bool
 

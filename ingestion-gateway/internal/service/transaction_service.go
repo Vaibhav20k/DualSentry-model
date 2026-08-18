@@ -3,26 +3,26 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/decision"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/events"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/features"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/idempotency"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/kafka"
+	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/metrics"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/ml"
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/repository"
-	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/idempotency"
+	"log"
+	"time"
 
 	pb "github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/proto"
 )
 
 type TransactionService struct {
-	repository       repository.TransactionRepository
-	anomalyRepo      repository.AnomalyRepository
-	fraudPredRepo    repository.FraudPredictionRepository
-	baselineRepo     repository.BaselineRepository
-	historyRepo      repository.HistoryRepository
+	repository    repository.TransactionRepository
+	anomalyRepo   repository.AnomalyRepository
+	fraudPredRepo repository.FraudPredictionRepository
+	baselineRepo  repository.BaselineRepository
+	historyRepo   repository.HistoryRepository
 
 	producer *kafka.Producer
 	updater  *BaselineUpdater
@@ -58,7 +58,6 @@ func (s *TransactionService) SubmitTransaction(
 	req *pb.TransactionRequest,
 ) (*pb.TransactionResponse, error) {
 
-
 	if idempotencyKey != "" {
 
 		var cachedResponse pb.TransactionResponse
@@ -83,32 +82,12 @@ func (s *TransactionService) SubmitTransaction(
 		}
 	}
 	// ---------------------------------------------------------
-	// Step 1: Persist transaction
-	// ---------------------------------------------------------
-
-	transactionID, err := s.repository.SaveTransaction(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	// ---------------------------------------------------------
-	// Step 2: Update user baseline
-	// ---------------------------------------------------------
-
-	if s.updater != nil {
-		if err := s.updater.UpdateBaseline(ctx, req.UserId); err != nil {
-			return nil, err
-		}
-	}
-
-	// ---------------------------------------------------------
-	// Step 3: Build Transaction Event
+	// Step 1: Build Transaction Event
 	// ---------------------------------------------------------
 
 	event := events.TransactionEvent{
-		TransactionID: transactionID,
-		UserID:        req.UserId,
-		Timestamp:     req.Timestamp,
+		UserID:    req.UserId,
+		Timestamp: req.Timestamp,
 
 		Amount:          req.Amount,
 		Currency:        req.Currency,
@@ -129,7 +108,7 @@ func (s *TransactionService) SubmitTransaction(
 	}
 
 	// ---------------------------------------------------------
-	// Step 4: Build Feature Vector
+	// Step 2: Build Feature Vector (from pre-transaction history)
 	// ---------------------------------------------------------
 
 	vector := features.BuildFeatureVector(
@@ -139,12 +118,12 @@ func (s *TransactionService) SubmitTransaction(
 	)
 
 	// ---------------------------------------------------------
-	// Step 5: ML Prediction
+	// Step 3: ML Prediction
 	// ---------------------------------------------------------
 
 	predictionStart := time.Now()
 
-		result, err := ml.PredictionBreaker.Execute(func() (interface{}, error) {
+	result, err := ml.PredictionBreaker.Execute(func() (interface{}, error) {
 		return s.mlClient.Predict(ctx, vector)
 	})
 
@@ -169,6 +148,26 @@ func (s *TransactionService) SubmitTransaction(
 	)
 
 	// ---------------------------------------------------------
+	// Step 4: Persist Raw Transaction
+	// ---------------------------------------------------------
+
+	transactionID, err := s.repository.SaveTransaction(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	event.TransactionID = transactionID
+
+	// ---------------------------------------------------------
+	// Step 5: Update User Baseline (post-transaction)
+	// ---------------------------------------------------------
+
+	if s.updater != nil {
+		if err := s.updater.UpdateBaseline(ctx, req.UserId); err != nil {
+			log.Printf("Warning: baseline update failed for user %s: %v", req.UserId, err)
+		}
+	}
+
+	// ---------------------------------------------------------
 	// Step 6: Persist Prediction
 	// ---------------------------------------------------------
 
@@ -184,7 +183,7 @@ func (s *TransactionService) SubmitTransaction(
 		prediction.FraudProbability,
 		decisionStr,
 		"xgboost",
-		"hi_li_small_v1",
+		"2.0.0",
 		"",
 	)
 	if err != nil {
@@ -212,8 +211,8 @@ func (s *TransactionService) SubmitTransaction(
 	event.FraudProbability = prediction.FraudProbability
 	event.IsFraud = isFraud
 	event.ModelName = "xgboost"
-	event.ModelVersion = "hi_li_small_v1"
-		// ---------------------------------------------------------
+	event.ModelVersion = prediction.ModelVersion
+	// ---------------------------------------------------------
 	// Step 7: Publish Kafka Event
 	// ---------------------------------------------------------
 

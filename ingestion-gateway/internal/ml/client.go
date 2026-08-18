@@ -5,10 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
-	"time"
 	"os"
+	"time"
 
 	"github.com/Vaibhav20k/fintech-pipeline/ingestion-gateway/internal/features"
 )
@@ -54,37 +53,27 @@ func (c *Client) Predict(
 	vector features.FeatureVector,
 ) (*PredictionResponse, error) {
 
+	month := vector.Month
+	if month < 1 || month > 12 {
+		month = int(time.Now().Month())
+	}
+
 	payload := map[string]any{
-		"amount": vector.Amount,
-
-		"payment_channel": vector.PaymentMethod,
-
+		"amount":                      vector.Amount,
+		"payment_channel":             vector.PaymentMethod,
 		"time_since_last_transaction": vector.TimeSinceLastTransaction,
-
-		"velocity_score": vector.TransactionVelocity1H,
-
-		// Clamp to non-negative: ML model schema requires Field(ge=0)
-		"spending_deviation_score": math.Max(0, vector.AmountDeviation),
-
-		"is_first_transaction": 0,
-
-		"hour": vector.HourOfDay,
-
-		"day_of_week": vector.DayOfWeek,
-
-		"month": int(time.Now().Month()),
-
-		"is_weekend": boolToInt(vector.IsWeekend),
-
-		"is_cross_bank_transfer": 0,
-
-		"is_cross_currency_transfer": 0,
-
-		"is_new_receiver": boolToInt(vector.NewMerchant),
-
-		"is_new_bank": 0,
-
-		"is_new_payment_format": boolToInt(vector.PaymentMethodChanged),
+		"velocity_score":              vector.TransactionVelocity1H,
+		"spending_deviation_score":    vector.AmountZScore,
+		"is_first_transaction":        boolToInt(vector.IsFirstTransaction),
+		"hour":                        vector.HourOfDay,
+		"day_of_week":                 vector.DayOfWeek,
+		"month":                       month,
+		"is_weekend":                  boolToInt(vector.IsWeekend),
+		"is_cross_bank_transfer":      0,
+		"is_cross_currency_transfer":  0,
+		"is_new_receiver":             boolToInt(vector.NewMerchant),
+		"is_new_bank":                 0,
+		"is_new_payment_format":       boolToInt(vector.PaymentMethodChanged),
 	}
 
 	body, err := json.Marshal(payload)
