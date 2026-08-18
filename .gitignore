@@ -8,6 +8,8 @@ ml-anomaly-engine/models/*.joblib
 ml-anomaly-engine/models/*.pkl
 *.pkl
 *.joblib
+!ml-anomaly-engine/models/saved_models*/*.pkl
+!ml-anomaly-engine/models/saved_models*/*.json
 ml-anomaly-engine/synthetic_data/*.csv
 ml-anomaly-engine/.venv/
 .venv/

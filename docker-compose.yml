@@ -76,7 +76,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     healthcheck:
-      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      test: ["CMD-SHELL", "echo ruok | nc localhost 2181 > /dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -183,6 +183,7 @@ services:
       POSTGRES_DB: fintech_db
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
+      JWT_SECRET_KEY: dev_jwt_secret_key_change_in_prod_4c5d8f91b7d6e2a3c9f84a1d7e6b5f90
     depends_on:
       postgres:
         condition: service_healthy

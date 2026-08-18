@@ -28,7 +28,7 @@ jobs:
           cd ingestion-gateway
           go fmt ./...
           go vet ./...
-          go test -v ./... || true
+          go test -v ./...
           go build -o server ./cmd/server
 
       - name: Verify Transaction Simulator
@@ -36,7 +36,7 @@ jobs:
           cd transaction-simulator
           go fmt ./...
           go vet ./...
-          go test -v ./... || true
+          go test -v ./...
           go build -o simulator ./cmd/simulator
 
   python-ml-ci:
@@ -63,12 +63,12 @@ jobs:
       - name: Lint & Syntax Check
         run: |
           cd ml-anomaly-engine
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Run Python Unit Tests
         run: |
           cd ml-anomaly-engine
-          pytest --maxfail=5 --disable-warnings -v || true
+          pytest --maxfail=5 --disable-warnings -v
 
   frontend-ci:
     name: React Frontend CI (Fraud Dashboard)
@@ -97,7 +97,7 @@ jobs:
       - name: Run ESLint
         run: |
           cd fraud-dashboard
-          npm run lint || true
+          npm run lint
 
       - name: Build Dashboard
         run: |
