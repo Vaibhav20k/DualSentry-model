@@ -68,7 +68,7 @@ jobs:
       - name: Run Python Unit Tests
         run: |
           cd ml-anomaly-engine
-          pytest --maxfail=5 --disable-warnings -v
+          PYTHONPATH=. python -m pytest --maxfail=5 --disable-warnings -v
 
   frontend-ci:
     name: React Frontend CI (Fraud Dashboard)
